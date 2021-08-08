@@ -667,6 +667,8 @@ public abstract class StringUtils {
 		if (!hasLength(path)) {
 			return path;
 		}
+
+		// 将 windows 的目录级别分隔符 \\ 替换成 /
 		String pathToUse = replace(path, WINDOWS_FOLDER_SEPARATOR, FOLDER_SEPARATOR);
 
 		// Shortcut if there is no work to do
@@ -684,8 +686,7 @@ public abstract class StringUtils {
 			prefix = pathToUse.substring(0, prefixIndex + 1);
 			if (prefix.contains(FOLDER_SEPARATOR)) {
 				prefix = "";
-			}
-			else {
+			}else {
 				pathToUse = pathToUse.substring(prefixIndex + 1);
 			}
 		}

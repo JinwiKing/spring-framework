@@ -141,15 +141,13 @@ public abstract class BeanUtils {
 		}
 		try {
 			return instantiateClass(clazz.getDeclaredConstructor());
-		}
-		catch (NoSuchMethodException ex) {
+		}catch (NoSuchMethodException ex) {
 			Constructor<T> ctor = findPrimaryConstructor(clazz);
 			if (ctor != null) {
 				return instantiateClass(ctor);
 			}
 			throw new BeanInstantiationException(clazz, "No default constructor found", ex);
-		}
-		catch (LinkageError err) {
+		}catch (LinkageError err) {
 			throw new BeanInstantiationException(clazz, "Unresolvable class definition", err);
 		}
 	}
@@ -190,9 +188,9 @@ public abstract class BeanUtils {
 		try {
 			ReflectionUtils.makeAccessible(ctor);
 			if (KotlinDetector.isKotlinReflectPresent() && KotlinDetector.isKotlinType(ctor.getDeclaringClass())) {
+				// 如果是 Kotlin，则使用 Kotlin 进行初始化
 				return KotlinDelegate.instantiateClass(ctor, args);
-			}
-			else {
+			}else {
 				Class<?>[] parameterTypes = ctor.getParameterTypes();
 				Assert.isTrue(args.length <= parameterTypes.length, "Can't specify more arguments than constructor parameters");
 				Object[] argsWithDefaultValues = new Object[args.length];
@@ -207,17 +205,13 @@ public abstract class BeanUtils {
 				}
 				return ctor.newInstance(argsWithDefaultValues);
 			}
-		}
-		catch (InstantiationException ex) {
+		}catch (InstantiationException ex) {
 			throw new BeanInstantiationException(ctor, "Is it an abstract class?", ex);
-		}
-		catch (IllegalAccessException ex) {
+		}catch (IllegalAccessException ex) {
 			throw new BeanInstantiationException(ctor, "Is the constructor accessible?", ex);
-		}
-		catch (IllegalArgumentException ex) {
+		}catch (IllegalArgumentException ex) {
 			throw new BeanInstantiationException(ctor, "Illegal arguments for constructor", ex);
-		}
-		catch (InvocationTargetException ex) {
+		}catch (InvocationTargetException ex) {
 			throw new BeanInstantiationException(ctor, "Constructor threw exception", ex.getTargetException());
 		}
 	}

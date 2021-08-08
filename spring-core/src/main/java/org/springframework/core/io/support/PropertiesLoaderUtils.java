@@ -148,8 +148,7 @@ public abstract class PropertiesLoaderUtils {
 					throw new UnsupportedOperationException("XML support disabled");
 				}
 				props.loadFromXML(is);
-			}
-			else {
+			}else {
 				props.load(is);
 			}
 		}

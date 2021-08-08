@@ -58,6 +58,8 @@ public final class SpringProperties {
 
 	static {
 		try {
+
+			// 读取类目录下的 spring.properties 文件
 			ClassLoader cl = SpringProperties.class.getClassLoader();
 			URL url = (cl != null ? cl.getResource(PROPERTIES_RESOURCE_LOCATION) :
 					ClassLoader.getSystemResource(PROPERTIES_RESOURCE_LOCATION));
