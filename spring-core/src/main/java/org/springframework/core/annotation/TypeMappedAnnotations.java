@@ -16,20 +16,15 @@
 
 package org.springframework.core.annotation;
 
+import org.springframework.lang.Nullable;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Spliterator;
-import java.util.Spliterators;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import org.springframework.lang.Nullable;
 
 /**
  * {@link MergedAnnotations} implementation that searches for and adapts
@@ -50,6 +45,9 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 	@Nullable
 	private final Object source;
 
+	/**
+	 * 对应注解到元素的元素
+	 */
 	@Nullable
 	private final AnnotatedElement element;
 
@@ -171,8 +169,9 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 		if (this.annotationFilter.matches(annotationType)) {
 			return MergedAnnotation.missing();
 		}
-		MergedAnnotation<A> result = scan(annotationType,
-				new MergedAnnotationFinder<>(annotationType, predicate, selector));
+
+		// MergedAnnotationFinder 泛型的返回类型为 MergedAnnotation<A>
+		MergedAnnotation<A> result = scan(annotationType, new MergedAnnotationFinder<>(annotationType, predicate, selector));
 		return (result != null ? result : MergedAnnotation.missing());
 	}
 
@@ -233,12 +232,14 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 	}
 
 	@Nullable
-	private <C, R> R scan(C criteria, AnnotationsProcessor<C, R> processor) {
+	private <C, ReturnType> ReturnType scan(C criteria, AnnotationsProcessor<C, ReturnType> processor) {
 		if (this.annotations != null) {
-			R result = processor.doWithAnnotations(criteria, 0, this.source, this.annotations);
+			// MergedAnnotationFinder 只有当 this.annotations 不为 null 才不会返回 null
+			ReturnType result = processor.doWithAnnotations(criteria, 0, this.source, this.annotations);
 			return processor.finish(result);
 		}
 		if (this.element != null && this.searchStrategy != null) {
+			// 一般来说 this.element 和 this.searchStrategy 都不等于 null
 			return AnnotationsScanner.scan(criteria, this.element, this.searchStrategy, processor);
 		}
 		return null;
@@ -249,6 +250,8 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 			RepeatableContainers repeatableContainers, AnnotationFilter annotationFilter) {
 
 		if (AnnotationsScanner.isKnownEmpty(element, searchStrategy)) {
+			// 这里检查是不是元素一定没有注解，例如，桥接的方法是jvm生成的，一定不会存在
+			// 注解，所有没有必要扫描。
 			return NONE;
 		}
 		return new TypeMappedAnnotations(element, searchStrategy, repeatableContainers, annotationFilter);
@@ -281,6 +284,8 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 		/**
 		 * Shared instances that save us needing to create a new processor for
 		 * the common combinations.
+		 *
+		 * <p>表
 		 */
 		private static final IsPresent[] SHARED;
 		static {
@@ -313,12 +318,15 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 			for (Annotation annotation : annotations) {
 				if (annotation != null) {
 					Class<? extends Annotation> type = annotation.annotationType();
+					// 检查类型是不是 null，因为调用者传进来的注解列表可能是经过过滤的，然后检查是不是可以
+					// 直接过滤掉
 					if (type != null && !this.annotationFilter.matches(type)) {
 						if (type == requiredType || type.getName().equals(requiredType)) {
 							return Boolean.TRUE;
 						}
-						Annotation[] repeatedAnnotations =
-								this.repeatableContainers.findRepeatedAnnotations(annotation);
+
+						// NoRepeatableContainers 设置了 parent 为 null 使得 findRepeatedAnnotations 方法返回 null
+						Annotation[] repeatedAnnotations = this.repeatableContainers.findRepeatedAnnotations(annotation);
 						if (repeatedAnnotations != null) {
 							Boolean result = doWithAnnotations(
 									requiredType, aggregateIndex, source, repeatedAnnotations);
@@ -392,9 +400,10 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 		@Nullable
 		public MergedAnnotation<A> doWithAnnotations(Object type, int aggregateIndex,
 				@Nullable Object source, Annotation[] annotations) {
-
 			for (Annotation annotation : annotations) {
 				if (annotation != null && !annotationFilter.matches(annotation)) {
+					// 当 annotation 不为空以及不被过滤的情况下进入该判断
+
 					MergedAnnotation<A> result = process(type, aggregateIndex, source, annotation);
 					if (result != null) {
 						return result;
@@ -408,6 +417,7 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 		private MergedAnnotation<A> process(
 				Object type, int aggregateIndex, @Nullable Object source, Annotation annotation) {
 
+			// repeatableContainers 一般默认为 NoRepeatableContainer
 			Annotation[] repeatedAnnotations = repeatableContainers.findRepeatedAnnotations(annotation);
 			if (repeatedAnnotations != null) {
 				return doWithAnnotations(type, aggregateIndex, source, repeatedAnnotations);

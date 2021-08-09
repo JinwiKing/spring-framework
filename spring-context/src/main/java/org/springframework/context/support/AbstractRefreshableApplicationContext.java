@@ -26,17 +26,24 @@ import org.springframework.context.ApplicationContextException;
 import org.springframework.lang.Nullable;
 
 /**
+ * Base class: 基类
+ *
  * Base class for {@link org.springframework.context.ApplicationContext}
  * implementations which are supposed to support multiple calls to {@link #refresh()},
  * creating a new internal bean factory instance every time.
  * Typically (but not necessarily), such a context will be driven by
  * a set of config locations to load bean definitions from.
+ * <p>用于打算支持 ApplicationContext 接口的 refresh() 多次调用，每次调用都将创建一个新的内部
+ * bean 工厂【这一句表示这个基类是一个包装类（装饰器）？】。
  *
  * <p>The only method to be implemented by subclasses is {@link #loadBeanDefinitions},
- * which gets invoked on each refresh. A concrete implementation is supposed to load
+ * which gets invoked on each refresh. A concrete (此处应该指的是上面提到的subclass) implementation is supposed to load
  * bean definitions into the given
  * {@link org.springframework.beans.factory.support.DefaultListableBeanFactory},
  * typically delegating to one or more specific bean definition readers.
+ * 这个模板类的子类实现是一个支持加载 bean 的定义到类型
+ * org.springframework.beans.factory.support.DefaultListableBeanFactory 的
+ * 实例中，
  *
  * <p><b>Note that there is a similar base class for WebApplicationContexts.</b>
  * {@link org.springframework.web.context.support.AbstractRefreshableWebApplicationContext}
@@ -120,14 +127,20 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	@Override
 	protected final void refreshBeanFactory() throws BeansException {
 		if (hasBeanFactory()) {
+
+			// stop the old bean factory first
+
 			destroyBeans();
 			closeBeanFactory();
 		}
+
+		// start a new bean factory after shutdown the previous bean factory
+
 		try {
 			DefaultListableBeanFactory beanFactory = createBeanFactory();
 			beanFactory.setSerializationId(getId());
-			customizeBeanFactory(beanFactory);
-			loadBeanDefinitions(beanFactory);
+			customizeBeanFactory(beanFactory);	// 自定义bean factory
+			loadBeanDefinitions(beanFactory);	// 关键点！！！ 子类需要实现 bean 定义的加载
 			this.beanFactory = beanFactory;
 		}
 		catch (IOException ex) {

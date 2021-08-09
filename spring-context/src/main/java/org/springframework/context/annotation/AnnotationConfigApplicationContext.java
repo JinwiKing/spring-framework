@@ -55,8 +55,16 @@ import org.springframework.util.Assert;
  */
 public class AnnotationConfigApplicationContext extends GenericApplicationContext implements AnnotationConfigRegistry {
 
+	/**
+	 * 该类没有接口。默认 new AnnotatedBeanDefinitionReader(this); {@link AnnotatedBeanDefinitionReader},
+	 * 传入一个 bean 注册器
+	 */
 	private final AnnotatedBeanDefinitionReader reader;
 
+	/**
+	 * 默认 new ClassPathBeanDefinitionScanner(this); {@link ClassPathBeanDefinitionScanner},
+	 * 传入一个 bean 注册器
+	 */
 	private final ClassPathBeanDefinitionScanner scanner;
 
 
@@ -65,6 +73,9 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * through {@link #register} calls and then manually {@linkplain #refresh refreshed}.
 	 */
 	public AnnotationConfigApplicationContext() {
+		// 默认父类的 StartupStep 为 ApplicationStartup.DEFAULT
+		// this 是 bean 工厂也是 bean 的注册中心
+
 		StartupStep createAnnotatedBeanDefReader = this.getApplicationStartup().start("spring.context.annotated-bean-reader.create");
 		this.reader = new AnnotatedBeanDefinitionReader(this);
 		createAnnotatedBeanDefReader.end();

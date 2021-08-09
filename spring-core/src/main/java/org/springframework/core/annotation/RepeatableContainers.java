@@ -67,6 +67,8 @@ public abstract class RepeatableContainers {
 
 	@Nullable
 	Annotation[] findRepeatedAnnotations(Annotation annotation) {
+		// NoRepeatableContainers 的 parent = null
+
 		if (this.parent == null) {
 			return null;
 		}

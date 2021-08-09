@@ -93,11 +93,10 @@ public class PropertyPlaceholderHelper {
 		String simplePrefixForSuffix = wellKnownSimplePrefixes.get(this.placeholderSuffix);
 		if (simplePrefixForSuffix != null && this.placeholderPrefix.endsWith(simplePrefixForSuffix)) {
 			this.simplePrefix = simplePrefixForSuffix;
-		}
-		else {
+		}else {
 			this.simplePrefix = this.placeholderPrefix;
 		}
-		this.valueSeparator = valueSeparator;
+		this.valueSeparator = valueSeparator;	// 默认为 :
 		this.ignoreUnresolvablePlaceholders = ignoreUnresolvablePlaceholders;
 	}
 

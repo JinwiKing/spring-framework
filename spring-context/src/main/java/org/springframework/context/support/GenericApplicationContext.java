@@ -46,6 +46,8 @@ import org.springframework.util.Assert;
  * instance and does not assume a specific bean definition format. Implements
  * the {@link org.springframework.beans.factory.support.BeanDefinitionRegistry}
  * interface in order to allow for applying any bean definition readers to it.
+ * <p>通用的 ApplicationContext 实现类，其内部有一个内部 DefaultListableBeanFactory 实例
+ * 并且不设定 bean 定义的格式【这个应该也是一个包装类（装饰器）】。
  *
  * <p>Typical usage is to register a variety of bean definitions via the
  * {@link org.springframework.beans.factory.support.BeanDefinitionRegistry}

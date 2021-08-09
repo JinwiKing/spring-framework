@@ -148,11 +148,17 @@ public abstract class AnnotationConfigUtils {
 	public static Set<BeanDefinitionHolder> registerAnnotationConfigProcessors(
 			BeanDefinitionRegistry registry, @Nullable Object source) {
 
+		// 这里获取在包装内的 DefaultListableBeanFactory 实例，如 GenericApplicationContext
+		// 内部有一个内部的 DefaultListableBeanFactory 实例。
 		DefaultListableBeanFactory beanFactory = unwrapDefaultListableBeanFactory(registry);
 		if (beanFactory != null) {
+
+			// beanFactory.getDependencyComparator() 默认为 null
 			if (!(beanFactory.getDependencyComparator() instanceof AnnotationAwareOrderComparator)) {
 				beanFactory.setDependencyComparator(AnnotationAwareOrderComparator.INSTANCE);
 			}
+
+			// beanFactory.getAutowireCandidateResolver() 默认为 SimpleAutowireCandidateResolver.INSTANCE => 使用 SimpleAutowireCandidateResolver 单例实例;
 			if (!(beanFactory.getAutowireCandidateResolver() instanceof ContextAnnotationAutowireCandidateResolver)) {
 				beanFactory.setAutowireCandidateResolver(new ContextAnnotationAutowireCandidateResolver());
 			}

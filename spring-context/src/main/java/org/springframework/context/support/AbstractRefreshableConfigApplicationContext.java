@@ -29,6 +29,8 @@ import org.springframework.util.StringUtils;
  * context implementations such as {@link ClassPathXmlApplicationContext} and
  * {@link FileSystemXmlApplicationContext}, as well as
  * {@link org.springframework.web.context.support.XmlWebApplicationContext}.
+ * 作为服务 ClassPathXmlApplicationContext 和 FileSystemXmlApplicationContext
+ * 以及 org.springframework.web.context.support.XmlWebApplicationContext 的基类
  *
  * @author Juergen Hoeller
  * @since 2.5.2

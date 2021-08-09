@@ -332,6 +332,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	@Override
 	public ConfigurableEnvironment getEnvironment() {
+		// property environment is private, it can only be set by via setEnvironment method or
+		// initialized in createEnvironment method
+
 		if (this.environment == null) {
 			this.environment = createEnvironment();
 		}
@@ -574,7 +577,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
-				onRefresh();
+				onRefresh();	// 当前类为空方法
 
 				// Check for listener beans and register them.
 				registerListeners();

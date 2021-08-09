@@ -50,10 +50,19 @@ public class AnnotatedBeanDefinitionReader {
 
 	private final BeanDefinitionRegistry registry;
 
+	/**
+	 * 默认 {@link AnnotationBeanNameGenerator#INSTANCE}
+	 */
 	private BeanNameGenerator beanNameGenerator = AnnotationBeanNameGenerator.INSTANCE;
 
+	/**
+	 * 默认 {@link AnnotationScopeMetadataResolver}
+	 */
 	private ScopeMetadataResolver scopeMetadataResolver = new AnnotationScopeMetadataResolver();
 
+	/**
+	 * 内部类用于计算 Conditional 的注解。没有接口，默认 new ConditionEvaluator(registry, environment, null);
+	 */
 	private ConditionEvaluator conditionEvaluator;
 
 
@@ -250,8 +259,14 @@ public class AnnotatedBeanDefinitionReader {
 			@Nullable Class<? extends Annotation>[] qualifiers, @Nullable Supplier<T> supplier,
 			@Nullable BeanDefinitionCustomizer[] customizers) {
 
+		// supplier 有个get方法，应该是用于在创建bean时，bean的实例由 supplier 提供而不是由 spring 的
+		// bean 工厂去生产。
+
+		// 实现了 BeanDefinition 接口
 		AnnotatedGenericBeanDefinition abd = new AnnotatedGenericBeanDefinition(beanClass);
 		if (this.conditionEvaluator.shouldSkip(abd.getMetadata())) {
+			// 这里如果使用了 Conditional 注解，并且不满足 Conditional 里面的 condition，则不将该
+			// bean 的定义加入到 bean 注册中心中
 			return;
 		}
 

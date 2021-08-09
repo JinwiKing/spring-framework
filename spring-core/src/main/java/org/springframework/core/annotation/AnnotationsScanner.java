@@ -75,6 +75,9 @@ abstract class AnnotationsScanner {
 			AnnotationsProcessor<C, R> processor) {
 
 		R result = process(context, source, searchStrategy, processor);
+
+		// IsPresent 使用接口的 default 方法返回传入的参数（使用接口的 default 方法）
+		// MergedAnnotationFinder 为 return (result != null ? result : this.result);
 		return processor.finish(result);
 	}
 
@@ -82,13 +85,15 @@ abstract class AnnotationsScanner {
 	private static <C, R> R process(C context, AnnotatedElement source,
 			SearchStrategy searchStrategy, AnnotationsProcessor<C, R> processor) {
 
+		// source 可以是类、方法或属性
+
 		if (source instanceof Class) {
 			return processClass(context, (Class<?>) source, searchStrategy, processor);
 		}
 		if (source instanceof Method) {
 			return processMethod(context, (Method) source, searchStrategy, processor);
 		}
-		return processElement(context, source, processor);
+		return processElement(context, source, processor);	// 被注解的元素是属性
 	}
 
 	@Nullable
@@ -177,21 +182,24 @@ abstract class AnnotationsScanner {
 			AnnotationsProcessor<C, R> processor, boolean includeInterfaces, boolean includeEnclosing) {
 
 		try {
+			// IsPresent 的 doWithAggregate 返回null
 			R result = processor.doWithAggregate(context, aggregateIndex[0]);
 			if (result != null) {
 				return result;
 			}
 			if (hasPlainJavaAnnotationsOnly(source)) {
+				// java 包下的类不会有 spring 想要注解
 				return null;
 			}
 			Annotation[] annotations = getDeclaredAnnotations(source, false);
-			result = processor.doWithAnnotations(context, aggregateIndex[0], source, annotations);
+			result = processor.doWithAnnotations(context, aggregateIndex[0], source, annotations);	// 这一步检查 context 这个注解是不是存在于 source 上
 			if (result != null) {
 				return result;
 			}
 			aggregateIndex[0]++;
 			if (includeInterfaces) {
 				for (Class<?> interfaceType : source.getInterfaces()) {
+					// 递归调用进行检查接口是不是存在 context 这个注解
 					R interfacesResult = processClassHierarchy(context, aggregateIndex,
 						interfaceType, processor, true, includeEnclosing);
 					if (interfacesResult != null) {
@@ -201,6 +209,7 @@ abstract class AnnotationsScanner {
 			}
 			Class<?> superclass = source.getSuperclass();
 			if (superclass != Object.class && superclass != null) {
+				// 递归调用进行检查父类是不是存在 context 这个注解
 				R superclassResult = processClassHierarchy(context, aggregateIndex,
 					superclass, processor, includeInterfaces, includeEnclosing);
 				if (superclassResult != null) {
@@ -208,6 +217,8 @@ abstract class AnnotationsScanner {
 				}
 			}
 			if (includeEnclosing) {
+				// 应该是检查类的内部类
+
 				// Since merely attempting to load the enclosing class may result in
 				// automatic loading of sibling nested classes that in turn results
 				// in an exception such as NoClassDefFoundError, we wrap the following
@@ -222,13 +233,11 @@ abstract class AnnotationsScanner {
 							return enclosingResult;
 						}
 					}
-				}
-				catch (Throwable ex) {
+				}catch (Throwable ex) {
 					AnnotationUtils.handleIntrospectionFailure(source, ex);
 				}
 			}
-		}
-		catch (Throwable ex) {
+		}catch (Throwable ex) {
 			AnnotationUtils.handleIntrospectionFailure(source, ex);
 		}
 		return null;
@@ -425,8 +434,7 @@ abstract class AnnotationsScanner {
 			R result = processor.doWithAggregate(context, 0);
 			return (result != null ? result : processor.doWithAnnotations(
 				context, 0, source, getDeclaredAnnotations(source, false)));
-		}
-		catch (Throwable ex) {
+		}catch (Throwable ex) {
 			AnnotationUtils.handleIntrospectionFailure(source, ex);
 		}
 		return null;
@@ -449,18 +457,16 @@ abstract class AnnotationsScanner {
 		Annotation[] annotations = declaredAnnotationCache.get(source);
 		if (annotations != null) {
 			cached = true;
-		}
-		else {
-			annotations = source.getDeclaredAnnotations();
+		}else {
+			annotations = source.getDeclaredAnnotations();	// 这里返回的是直接注解，不返回继承的注解
 			if (annotations.length != 0) {
 				boolean allIgnored = true;
 				for (int i = 0; i < annotations.length; i++) {
-					Annotation annotation = annotations[i];
+					Annotation annotation = annotations[i];	// 此 Annotation 是 java.ref.annotation 下的类
 					if (isIgnorable(annotation.annotationType()) ||
 							!AttributeMethods.forAnnotationType(annotation.annotationType()).isValid(annotation)) {
 						annotations[i] = null;
-					}
-					else {
+					}else {
 						allIgnored = false;
 					}
 				}
@@ -481,11 +487,17 @@ abstract class AnnotationsScanner {
 		return AnnotationFilter.PLAIN.matches(annotationType);
 	}
 
+	/**
+	 * 检查类型是不是没有注解
+	 */
 	static boolean isKnownEmpty(AnnotatedElement source, SearchStrategy searchStrategy) {
 		if (hasPlainJavaAnnotationsOnly(source)) {
 			return true;
 		}
 		if (searchStrategy == SearchStrategy.DIRECT || isWithoutHierarchy(source, searchStrategy)) {
+
+			// 如果是桥接的方法，直接返回false
+
 			if (source instanceof Method && ((Method) source).isBridge()) {
 				return false;
 			}
@@ -496,12 +508,12 @@ abstract class AnnotationsScanner {
 
 	static boolean hasPlainJavaAnnotationsOnly(@Nullable Object annotatedElement) {
 		if (annotatedElement instanceof Class) {
+			// return (type.getName().startsWith("java.") || type == Ordered.class);
 			return hasPlainJavaAnnotationsOnly((Class<?>) annotatedElement);
-		}
-		else if (annotatedElement instanceof Member) {
+		}else if (annotatedElement instanceof Member) {
+			// return (type.getName().startsWith("java.") || type == Ordered.class);
 			return hasPlainJavaAnnotationsOnly(((Member) annotatedElement).getDeclaringClass());
-		}
-		else {
+		}else {
 			return false;
 		}
 	}

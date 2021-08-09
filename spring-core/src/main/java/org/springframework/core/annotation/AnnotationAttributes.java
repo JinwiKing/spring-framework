@@ -429,7 +429,7 @@ public class AnnotationAttributes extends LinkedHashMap<String, Object> {
 		if (map instanceof AnnotationAttributes) {
 			return (AnnotationAttributes) map;
 		}
-		return new AnnotationAttributes(map);
+		return new AnnotationAttributes(map);	// AnnotationAttributes 底层是 LinkedHashMap
 	}
 
 }

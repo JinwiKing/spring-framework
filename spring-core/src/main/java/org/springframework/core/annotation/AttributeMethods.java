@@ -106,11 +106,11 @@ final class AttributeMethods {
 	boolean isValid(Annotation annotation) {
 		assertAnnotation(annotation);
 		for (int i = 0; i < size(); i++) {
+			// 将注解内的所有方法都调用一遍
 			if (canThrowTypeNotPresentException(i)) {
 				try {
 					get(i).invoke(annotation);
-				}
-				catch (Throwable ex) {
+				}catch (Throwable ex) {
 					return false;
 				}
 			}
@@ -253,7 +253,7 @@ final class AttributeMethods {
 	}
 
 	private static AttributeMethods compute(Class<? extends Annotation> annotationType) {
-		Method[] methods = annotationType.getDeclaredMethods();
+		Method[] methods = annotationType.getDeclaredMethods();	// 这里获取注解内的所有方法
 		int size = methods.length;
 		for (int i = 0; i < methods.length; i++) {
 			if (!isAttributeMethod(methods[i])) {

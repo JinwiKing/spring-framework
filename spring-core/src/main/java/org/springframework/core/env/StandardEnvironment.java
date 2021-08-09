@@ -91,6 +91,13 @@ public class StandardEnvironment extends AbstractEnvironment {
 	 */
 	@Override
 	protected void customizePropertySources(MutablePropertySources propertySources) {
+
+		// 在基类 AbstractEnvironment 的构造函数 AbstractEnvironment(MutablePropertySources) 中会调用
+		// customizePropertySources 方法进行初始化。基类的 customizePropertySources 方法是一个protected的
+		// 空方法，子类应实现这个方法进行定制属性源。
+		// 该子类提供了 SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME 和 SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME
+		// 属性源，也就是分别名为 systemProperties 和 systemEnvironment 属性源。
+
 		propertySources.addLast(
 				new PropertiesPropertySource(SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME, getSystemProperties()));
 		propertySources.addLast(

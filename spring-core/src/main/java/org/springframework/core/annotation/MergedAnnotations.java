@@ -317,6 +317,11 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
 	 * Create a new {@link MergedAnnotations} instance containing all
 	 * annotations and meta-annotations from the specified element and,
 	 * depending on the {@link SearchStrategy}, related inherited elements.
+	 *
+	 * <p>创建一个包含在指定的有注解的元素上的所有注解，同时，根据查找策略 SearchStrategy，
+	 * 决定是否包含该注解的元素的父元素上的所有注解（比如子类实现父类的方法，同时父类方法上
+	 * 也有注解；或者子类的父类上也有注解）。
+	 *
 	 * @param element the source element
 	 * @param searchStrategy the search strategy to use
 	 * @param repeatableContainers the repeatable containers that may be used by
@@ -327,6 +332,7 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
 	static MergedAnnotations from(AnnotatedElement element, SearchStrategy searchStrategy,
 			RepeatableContainers repeatableContainers) {
 
+		// AnnotationFilter.PLAIN 将过滤 "java.lang" 包和 "org.springframework.lang" 包下的所有类
 		return from(element, searchStrategy, repeatableContainers, AnnotationFilter.PLAIN);
 	}
 

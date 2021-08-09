@@ -20,6 +20,7 @@ import org.springframework.lang.Nullable;
 
 /**
  * Interface for resolving properties against any underlying source.
+ * 同于根据任意不同的来源决定属性
  *
  * @author Chris Beams
  * @author Juergen Hoeller
