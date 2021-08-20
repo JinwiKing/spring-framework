@@ -48,6 +48,8 @@ public abstract class AbstractTypeHierarchyTraversingFilter implements TypeFilte
 
 
 	protected AbstractTypeHierarchyTraversingFilter(boolean considerInherited, boolean considerInterfaces) {
+		super();	// -> Object()
+
 		this.considerInherited = considerInherited;
 		this.considerInterfaces = considerInterfaces;
 	}
@@ -76,15 +78,13 @@ public abstract class AbstractTypeHierarchyTraversingFilter implements TypeFilte
 					if (superClassMatch.booleanValue()) {
 						return true;
 					}
-				}
-				else {
+				}else {
 					// Need to read super class to determine a match...
 					try {
 						if (match(metadata.getSuperClassName(), metadataReaderFactory)) {
 							return true;
 						}
-					}
-					catch (IOException ex) {
+					}catch (IOException ex) {
 						if (logger.isDebugEnabled()) {
 							logger.debug("Could not read super class [" + metadata.getSuperClassName() +
 									"] of type-filtered class [" + metadata.getClassName() + "]");
@@ -109,8 +109,7 @@ public abstract class AbstractTypeHierarchyTraversingFilter implements TypeFilte
 						if (match(ifc, metadataReaderFactory)) {
 							return true;
 						}
-					}
-					catch (IOException ex) {
+					}catch (IOException ex) {
 						if (logger.isDebugEnabled()) {
 							logger.debug("Could not read interface [" + ifc + "] for type-filtered class [" +
 									metadata.getClassName() + "]");

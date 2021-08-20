@@ -78,13 +78,12 @@ public class OrderComparator implements Comparator<Object> {
 		boolean p2 = (o2 instanceof PriorityOrdered);
 		if (p1 && !p2) {
 			return -1;
-		}
-		else if (p2 && !p1) {
+		}else if (p2 && !p1) {
 			return 1;
 		}
 
-		int i1 = getOrder(o1, sourceProvider);
-		int i2 = getOrder(o2, sourceProvider);
+		int i1 = getOrder(o1, sourceProvider);	// 如果 o1 没有带有 @Order 注解，返回 Ordered.LOWEST_PRECEDENCE
+		int i2 = getOrder(o2, sourceProvider);	// 如果 o2 没有带有 @Order 注解，返回 Ordered.LOWEST_PRECEDENCE
 		return Integer.compare(i1, i2);
 	}
 
@@ -107,8 +106,7 @@ public class OrderComparator implements Comparator<Object> {
 							break;
 						}
 					}
-				}
-				else {
+				}else {
 					order = findOrder(orderSource);
 				}
 			}

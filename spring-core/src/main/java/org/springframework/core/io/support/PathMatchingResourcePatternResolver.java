@@ -184,6 +184,9 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 
 	private static final Log logger = LogFactory.getLog(PathMatchingResourcePatternResolver.class);
 
+	/**
+	 * 由 static 代码块初始化为 {@link org.eclipse.core.runtime.FileLocator#resolve}
+	 */
 	@Nullable
 	private static Method equinoxResolveMethod;
 
@@ -194,8 +197,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 					PathMatchingResourcePatternResolver.class.getClassLoader());
 			equinoxResolveMethod = fileLocatorClass.getMethod("resolve", URL.class);
 			logger.trace("Found Equinox FileLocator for OSGi bundle URL resolution");
-		}
-		catch (Throwable ex) {
+		}catch (Throwable ex) {
 			equinoxResolveMethod = null;
 		}
 	}
@@ -203,6 +205,9 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 
 	private final ResourceLoader resourceLoader;
 
+	/**
+	 * 默认 {@link AntPathMatcher}
+	 */
 	private PathMatcher pathMatcher = new AntPathMatcher();
 
 
@@ -212,6 +217,8 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	 * @see org.springframework.core.io.DefaultResourceLoader
 	 */
 	public PathMatchingResourcePatternResolver() {
+		super();	// -> Object
+
 		this.resourceLoader = new DefaultResourceLoader();
 	}
 
@@ -282,13 +289,11 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 			if (getPathMatcher().isPattern(locationPattern.substring(CLASSPATH_ALL_URL_PREFIX.length()))) {
 				// a class path resource pattern
 				return findPathMatchingResources(locationPattern);
-			}
-			else {
+			}else {
 				// all class path resources with the given name
 				return findAllClassPathResources(locationPattern.substring(CLASSPATH_ALL_URL_PREFIX.length()));
 			}
-		}
-		else {
+		}else {
 			// Generally only look for a pattern after a prefix here,
 			// and on Tomcat only after the "*/" separator for its "war:" protocol.
 			int prefixEnd = (locationPattern.startsWith("war:") ? locationPattern.indexOf("*/") + 1 :
@@ -492,12 +497,12 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	 * @see org.springframework.util.PathMatcher
 	 */
 	protected Resource[] findPathMatchingResources(String locationPattern) throws IOException {
-		String rootDirPath = determineRootDir(locationPattern);
+		String rootDirPath = determineRootDir(locationPattern);	// 这个路径是可能带有 classpath: 前缀的
 		String subPattern = locationPattern.substring(rootDirPath.length());
 		Resource[] rootDirResources = getResources(rootDirPath);
 		Set<Resource> result = new LinkedHashSet<>(16);
 		for (Resource rootDirResource : rootDirResources) {
-			rootDirResource = resolveRootDirResource(rootDirResource);
+			rootDirResource = resolveRootDirResource(rootDirResource);	// 默认直接返回传入的参数
 			URL rootDirUrl = rootDirResource.getURL();
 			if (equinoxResolveMethod != null && rootDirUrl.getProtocol().startsWith("bundle")) {
 				URL resolvedUrl = (URL) ReflectionUtils.invokeMethod(equinoxResolveMethod, null, rootDirUrl);
@@ -508,11 +513,11 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 			}
 			if (rootDirUrl.getProtocol().startsWith(ResourceUtils.URL_PROTOCOL_VFS)) {
 				result.addAll(VfsResourceMatchingDelegate.findMatchingResources(rootDirUrl, subPattern, getPathMatcher()));
-			}
-			else if (ResourceUtils.isJarURL(rootDirUrl) || isJarResource(rootDirResource)) {
+			}else if (ResourceUtils.isJarURL(rootDirUrl) || isJarResource(rootDirResource)) {
+				// 如果协议是 jar war zip vfszip wsjar 的情况下，进入这里
+				// isJarResource 默认为 false
 				result.addAll(doFindPathMatchingJarResources(rootDirResource, rootDirUrl, subPattern));
-			}
-			else {
+			}else {
 				result.addAll(doFindPathMatchingFileResources(rootDirResource, subPattern));
 			}
 		}
@@ -535,7 +540,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	 * @see #retrieveMatchingFiles
 	 */
 	protected String determineRootDir(String location) {
-		int prefixEnd = location.indexOf(':') + 1;
+		int prefixEnd = location.indexOf(':') + 1;	// classpath: 中的 ‘:’？
 		int rootDirEnd = location.length();
 		while (rootDirEnd > prefixEnd && getPathMatcher().isPattern(location.substring(prefixEnd, rootDirEnd))) {
 			rootDirEnd = location.lastIndexOf('/', rootDirEnd - 2) + 1;
@@ -606,8 +611,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 			JarEntry jarEntry = jarCon.getJarEntry();
 			rootEntryPath = (jarEntry != null ? jarEntry.getName() : "");
 			closeJarFile = !jarCon.getUseCaches();
-		}
-		else {
+		}else {
 			// No JarURLConnection -> need to resort to URL file parsing.
 			// We'll assume URLs of the format "jar:path!/entry", with the protocol
 			// being arbitrary as long as following the entry format.
@@ -622,15 +626,13 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 					jarFileUrl = urlFile.substring(0, separatorIndex);
 					rootEntryPath = urlFile.substring(separatorIndex + 2);  // both separators are 2 chars
 					jarFile = getJarFile(jarFileUrl);
-				}
-				else {
+				}else {
 					jarFile = new JarFile(urlFile);
 					jarFileUrl = urlFile;
 					rootEntryPath = "";
 				}
 				closeJarFile = true;
-			}
-			catch (ZipException ex) {
+			}catch (ZipException ex) {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Skipping invalid jar classpath entry [" + urlFile + "]");
 				}
@@ -659,8 +661,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 				}
 			}
 			return result;
-		}
-		finally {
+		}finally {
 			if (closeJarFile) {
 				jarFile.close();
 			}
@@ -674,13 +675,11 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 		if (jarFileUrl.startsWith(ResourceUtils.FILE_URL_PREFIX)) {
 			try {
 				return new JarFile(ResourceUtils.toURI(jarFileUrl).getSchemeSpecificPart());
-			}
-			catch (URISyntaxException ex) {
+			}catch (URISyntaxException ex) {
 				// Fallback for URLs that are not valid URIs (should hardly ever happen).
 				return new JarFile(jarFileUrl.substring(ResourceUtils.FILE_URL_PREFIX.length()));
 			}
-		}
-		else {
+		}else {
 			return new JarFile(jarFileUrl);
 		}
 	}

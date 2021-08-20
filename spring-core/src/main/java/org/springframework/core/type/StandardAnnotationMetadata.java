@@ -46,6 +46,9 @@ import org.springframework.util.ReflectionUtils;
  */
 public class StandardAnnotationMetadata extends StandardClassMetadata implements AnnotationMetadata {
 
+	/**
+	 * 一般为 TypeMappedAnnotations 类型的实例
+	 */
 	private final MergedAnnotations mergedAnnotations;
 
 	private final boolean nestedAnnotationsAsMap;
@@ -160,8 +163,7 @@ public class StandardAnnotationMetadata extends StandardClassMetadata implements
 						annotatedMethods.add(new StandardMethodMetadata(method, this.nestedAnnotationsAsMap));
 					}
 				}
-			}
-			catch (Throwable ex) {
+			}catch (Throwable ex) {
 				throw new IllegalStateException("Failed to introspect annotated methods on " + getIntrospectedClass(), ex);
 			}
 		}

@@ -280,8 +280,7 @@ public abstract class ReflectionUtils {
 	public static Object invokeMethod(Method method, @Nullable Object target, @Nullable Object... args) {
 		try {
 			return method.invoke(target, args);
-		}
-		catch (Exception ex) {
+		}catch (Exception ex) {
 			handleReflectionException(ex);
 		}
 		throw new IllegalStateException("Should never get here");
@@ -470,17 +469,17 @@ public abstract class ReflectionUtils {
 						result[index] = defaultMethod;
 						index++;
 					}
-				}
-				else {
+				}else {
 					result = declaredMethods;
 				}
+				// 这里使用 EMPTY_METHOD_ARRAY 用于节省内存
 				declaredMethodsCache.put(clazz, (result.length == 0 ? EMPTY_METHOD_ARRAY : result));
-			}
-			catch (Throwable ex) {
+			}catch (Throwable ex) {
 				throw new IllegalStateException("Failed to introspect Class [" + clazz.getName() +
 						"] from ClassLoader [" + clazz.getClassLoader() + "]", ex);
 			}
 		}
+		// 由于 declaredMethodsCache 使用了 EMPTY_METHOD_ARRAY，所以返回的时候要考虑克隆一个新引用出来
 		return (result.length == 0 || !defensive) ? result : result.clone();
 	}
 

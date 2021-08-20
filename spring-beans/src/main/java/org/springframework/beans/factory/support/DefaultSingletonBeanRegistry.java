@@ -172,12 +172,15 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 * Return the (raw) singleton object registered under the given name.
 	 * <p>Checks already instantiated singletons and also allows for an early
 	 * reference to a currently created singleton (resolving a circular reference).
+	 * <p> 注意，此处返回的单例可能没有经过 spring 依赖注入的！！！
 	 * @param beanName the name of the bean to look for
 	 * @param allowEarlyReference whether early references should be created or not
 	 * @return the registered singleton object, or {@code null} if none found
 	 */
 	@Nullable
 	protected Object getSingleton(String beanName, boolean allowEarlyReference) {
+		// 注意，此处返回的单例可能没有经过 spring 依赖注入的！！！
+
 		// Quick check for existing instance without full singleton lock
 		Object singletonObject = this.singletonObjects.get(beanName);
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
@@ -185,6 +188,8 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 			if (singletonObject == null && allowEarlyReference) {
 				synchronized (this.singletonObjects) {
 					// Consistent creation of early reference within full singleton lock
+
+					// dcl 策略
 					singletonObject = this.singletonObjects.get(beanName);
 					if (singletonObject == null) {
 						singletonObject = this.earlySingletonObjects.get(beanName);
@@ -552,6 +557,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		removeSingleton(beanName);
 
 		// Destroy the corresponding DisposableBean instance.
+		// 如果 bean 类实现了 DisposableBean 接口，则 disposableBean 不为 null？
 		DisposableBean disposableBean;
 		synchronized (this.disposableBeans) {
 			disposableBean = (DisposableBean) this.disposableBeans.remove(beanName);
@@ -567,6 +573,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 */
 	protected void destroyBean(String beanName, @Nullable DisposableBean bean) {
 		// Trigger destruction of dependent beans first...
+		// 销毁指定的 bean 的同时，也要消除依赖指定 bean 的 bean
 		Set<String> dependencies;
 		synchronized (this.dependentBeanMap) {
 			// Within full synchronization in order to guarantee a disconnected Set
@@ -577,6 +584,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 				logger.trace("Retrieved dependent beans for bean '" + beanName + "': " + dependencies);
 			}
 			for (String dependentBeanName : dependencies) {
+				// 如果this是 DefaultListableBeanFactory 的情况下，destroySingleton 方法的调用会出现递归调用
 				destroySingleton(dependentBeanName);
 			}
 		}
@@ -585,8 +593,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		if (bean != null) {
 			try {
 				bean.destroy();
-			}
-			catch (Throwable ex) {
+			}catch (Throwable ex) {
 				if (logger.isWarnEnabled()) {
 					logger.warn("Destruction of bean with name '" + beanName + "' threw an exception", ex);
 				}

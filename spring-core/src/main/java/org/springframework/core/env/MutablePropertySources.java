@@ -48,6 +48,7 @@ public class MutablePropertySources implements PropertySources {
 	 * Create a new {@link MutablePropertySources} object.
 	 */
 	public MutablePropertySources() {
+		super();	// Object()
 	}
 
 	/**
@@ -90,6 +91,7 @@ public class MutablePropertySources implements PropertySources {
 	@Override
 	@Nullable
 	public PropertySource<?> get(String name) {
+		// 需要遍历一遍列表
 		for (PropertySource<?> propertySource : this.propertySourceList) {
 			if (propertySource.getName().equals(name)) {
 				return propertySource;

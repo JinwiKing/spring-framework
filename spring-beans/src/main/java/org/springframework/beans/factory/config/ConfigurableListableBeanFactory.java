@@ -51,6 +51,7 @@ public interface ConfigurableListableBeanFactory
 
 	/**
 	 * Ignore the given dependency interface for autowiring.
+	 * <p>自动织入忽略给定的依赖接口
 	 * <p>This will typically be used by application contexts to register
 	 * dependencies that are resolved in other ways, like BeanFactory through
 	 * BeanFactoryAware or ApplicationContext through ApplicationContextAware.
@@ -64,6 +65,8 @@ public interface ConfigurableListableBeanFactory
 
 	/**
 	 * Register a special dependency type with corresponding autowired value.
+	 * <p>用一个自动织入的值注册值对应类型的特定的依赖。就是当自动织入
+	 * 遇到 dependencyType 时，将直接注入 autowiredValue 的值
 	 * <p>This is intended for factory/context references that are supposed
 	 * to be autowirable but are not defined as beans in the factory:
 	 * e.g. a dependency of type ApplicationContext resolved to the

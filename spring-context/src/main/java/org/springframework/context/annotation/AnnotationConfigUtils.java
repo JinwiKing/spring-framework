@@ -160,11 +160,20 @@ public abstract class AnnotationConfigUtils {
 
 			// beanFactory.getAutowireCandidateResolver() 默认为 SimpleAutowireCandidateResolver.INSTANCE => 使用 SimpleAutowireCandidateResolver 单例实例;
 			if (!(beanFactory.getAutowireCandidateResolver() instanceof ContextAnnotationAutowireCandidateResolver)) {
+				// 一般情况下 AnnotationConfigApplicationContext 会进入
 				beanFactory.setAutowireCandidateResolver(new ContextAnnotationAutowireCandidateResolver());
 			}
 		}
 
 		Set<BeanDefinitionHolder> beanDefs = new LinkedHashSet<>(8);
+
+		// 默认注册了处理器定义：
+		// ConfigurationClassPostProcessor org.springframework.context.annotation.internalConfigurationAnnotationProcessor -> ConfigurationClassPostProcessor
+		// AutowiredAnnotationBeanPostProcessor org.springframework.context.annotation.internalAutowiredAnnotationProcessor -> AutowiredAnnotationBeanPostProcessor
+		// CommonAnnotationBeanPostProcessor org.springframework.context.annotation.internalCommonAnnotationProcessor -> CommonAnnotationBeanPostProcessor
+		// AnnotationConfigUtils org.springframework.context.annotation.internalPersistenceAnnotationProcessor -> PersistenceAnnotationBeanPostProcessor
+		// EventListenerMethodProcessor org.springframework.context.event.internalEventListenerProcessor -> EventListenerMethodProcessor
+		// DefaultEventListenerFactory org.springframework.context.event.internalEventListenerFactory -> DefaultEventListenerFactory
 
 		if (!registry.containsBeanDefinition(CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(ConfigurationClassPostProcessor.class);
@@ -180,6 +189,7 @@ public abstract class AnnotationConfigUtils {
 
 		// Check for JSR-250 support, and if present add the CommonAnnotationBeanPostProcessor.
 		if (jsr250Present && !registry.containsBeanDefinition(COMMON_ANNOTATION_PROCESSOR_BEAN_NAME)) {
+			// 如果存在 javax.annotation.Resource 表示需要对 JSR-250 进行支持
 			RootBeanDefinition def = new RootBeanDefinition(CommonAnnotationBeanPostProcessor.class);
 			def.setSource(source);
 			beanDefs.add(registerPostProcessor(registry, def, COMMON_ANNOTATION_PROCESSOR_BEAN_NAME));
@@ -191,8 +201,7 @@ public abstract class AnnotationConfigUtils {
 			try {
 				def.setBeanClass(ClassUtils.forName(PERSISTENCE_ANNOTATION_PROCESSOR_CLASS_NAME,
 						AnnotationConfigUtils.class.getClassLoader()));
-			}
-			catch (ClassNotFoundException ex) {
+			}catch (ClassNotFoundException ex) {
 				throw new IllegalStateException(
 						"Cannot load optional framework class: " + PERSISTENCE_ANNOTATION_PROCESSOR_CLASS_NAME, ex);
 			}
@@ -227,11 +236,9 @@ public abstract class AnnotationConfigUtils {
 	private static DefaultListableBeanFactory unwrapDefaultListableBeanFactory(BeanDefinitionRegistry registry) {
 		if (registry instanceof DefaultListableBeanFactory) {
 			return (DefaultListableBeanFactory) registry;
-		}
-		else if (registry instanceof GenericApplicationContext) {
+		}else if (registry instanceof GenericApplicationContext) {
 			return ((GenericApplicationContext) registry).getDefaultListableBeanFactory();
-		}
-		else {
+		}else {
 			return null;
 		}
 	}
@@ -241,11 +248,18 @@ public abstract class AnnotationConfigUtils {
 	}
 
 	static void processCommonDefinitionAnnotations(AnnotatedBeanDefinition abd, AnnotatedTypeMetadata metadata) {
+		// 这里解析的注解包括：
+		// Lazy
+		// Primary
+		// DependsOn
+		// Role
+		// Description
+
 		AnnotationAttributes lazy = attributesFor(metadata, Lazy.class);
 		if (lazy != null) {
 			abd.setLazyInit(lazy.getBoolean("value"));
-		}
-		else if (abd.getMetadata() != metadata) {
+		}else if (abd.getMetadata() != metadata) {
+			// 这个条件意味着传入的 AnnotatedTypeMetadata 不一定属于 AnnotatedBeanDefinition 的？
 			lazy = attributesFor(abd.getMetadata(), Lazy.class);
 			if (lazy != null) {
 				abd.setLazyInit(lazy.getBoolean("value"));
@@ -275,6 +289,7 @@ public abstract class AnnotationConfigUtils {
 
 		ScopedProxyMode scopedProxyMode = metadata.getScopedProxyMode();
 		if (scopedProxyMode.equals(ScopedProxyMode.NO)) {
+			// 如果被注解的元素不含 Scope 注解的情况下，默认就是 ScopedProxyMode.NO
 			return definition;
 		}
 		boolean proxyTargetClass = scopedProxyMode.equals(ScopedProxyMode.TARGET_CLASS);
@@ -291,6 +306,10 @@ public abstract class AnnotationConfigUtils {
 		return AnnotationAttributes.fromMap(metadata.getAnnotationAttributes(annotationClassName, false));
 	}
 
+	/**
+	 * 获取的注解允许重复？
+	 * <p>如 {@link ComponentScans} 和 {@link ComponentScan}
+	 */
 	static Set<AnnotationAttributes> attributesForRepeatable(AnnotationMetadata metadata,
 			Class<?> containerClass, Class<?> annotationClass) {
 

@@ -522,7 +522,12 @@ abstract class AnnotationsScanner {
 		return (type.getName().startsWith("java.") || type == Ordered.class);
 	}
 
+	/**
+	 * 检查注解的元素是否不具有继承关系
+	 */
 	private static boolean isWithoutHierarchy(AnnotatedElement source, SearchStrategy searchStrategy) {
+		// 检查是否没有继承？
+
 		if (source == Object.class) {
 			return true;
 		}
@@ -530,11 +535,16 @@ abstract class AnnotationsScanner {
 			Class<?> sourceClass = (Class<?>) source;
 			boolean noSuperTypes = (sourceClass.getSuperclass() == Object.class &&
 					sourceClass.getInterfaces().length == 0);
+
+			// 如果查找策略是 TYPE_HIERARCHY_AND_ENCLOSING_CLASSES 时，需要检
+			// 查 noSuperTypes 和 sourceClass.getEnclosingClass() == null 是否成立
 			return (searchStrategy == SearchStrategy.TYPE_HIERARCHY_AND_ENCLOSING_CLASSES ? noSuperTypes &&
 					sourceClass.getEnclosingClass() == null : noSuperTypes);
 		}
 		if (source instanceof Method) {
 			Method sourceMethod = (Method) source;
+
+			// 如果是私有方法则肯定不是从父类继承的
 			return (Modifier.isPrivate(sourceMethod.getModifiers()) ||
 					isWithoutHierarchy(sourceMethod.getDeclaringClass(), searchStrategy));
 		}

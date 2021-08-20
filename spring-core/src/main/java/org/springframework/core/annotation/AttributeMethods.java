@@ -30,7 +30,7 @@ import org.springframework.util.ReflectionUtils;
 /**
  * Provides a quick way to access the attribute methods of an {@link Annotation}
  * with consistent ordering as well as a few useful utility methods.
- *
+ * <p>就是封装了原始的 Annotation 和从原始 Annotation 读取出来的属性方法
  * @author Phillip Webb
  * @since 5.2
  */
@@ -65,12 +65,12 @@ final class AttributeMethods {
 	private AttributeMethods(@Nullable Class<? extends Annotation> annotationType, Method[] attributeMethods) {
 		this.annotationType = annotationType;
 		this.attributeMethods = attributeMethods;
-		this.canThrowTypeNotPresentException = new boolean[attributeMethods.length];
+		this.canThrowTypeNotPresentException = new boolean[attributeMethods.length];	// 可以触发抛出类型没找到异常？
 		boolean foundDefaultValueMethod = false;
 		boolean foundNestedAnnotation = false;
 		for (int i = 0; i < attributeMethods.length; i++) {
 			Method method = this.attributeMethods[i];
-			Class<?> type = method.getReturnType();
+			Class<?> type = method.getReturnType();	// 获取注解中属性方法的返回值
 			if (method.getDefaultValue() != null) {
 				foundDefaultValueMethod = true;
 			}
@@ -242,6 +242,7 @@ final class AttributeMethods {
 
 	/**
 	 * Get the attribute methods for the given annotation type.
+	 * <p>获取注解属性
 	 * @param annotationType the annotation type
 	 * @return the attribute methods for the annotation type
 	 */

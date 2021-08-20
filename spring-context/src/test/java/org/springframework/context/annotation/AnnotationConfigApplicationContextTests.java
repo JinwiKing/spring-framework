@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.sprscan.BeanForScanning;
 import org.springframework.context.annotation6.ComponentForScanning;
 import org.springframework.context.annotation6.ConfigForScanning;
 import org.springframework.context.annotation6.Jsr330NamedForScanning;
@@ -69,6 +70,16 @@ class AnnotationConfigApplicationContextTests {
 		context.getBean("name");
 		Map<String, Object> beans = context.getBeansWithAnnotation(Configuration.class);
 		assertThat(beans).hasSize(2);
+	}
+
+	@Test
+	void scan(){
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+		context.register(ConfigForScanning2.class);
+		context.refresh();
+
+		BeanForScanning beanForScanning = context.getBean(BeanForScanning.class);
+		assertThat(beanForScanning).isNotNull();
 	}
 
 	@Test
@@ -406,6 +417,11 @@ class AnnotationConfigApplicationContextTests {
 			testBean.name = "foo";
 			return testBean;
 		}
+	}
+
+	@ComponentScan(basePackages = {"org.springframework.context.annotation.sprscan"})
+	static class ConfigForScanning2 {
+
 	}
 
 	@Configuration("customConfigBeanName")

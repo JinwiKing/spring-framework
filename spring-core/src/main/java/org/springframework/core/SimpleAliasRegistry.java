@@ -211,12 +211,13 @@ public class SimpleAliasRegistry implements AliasRegistry {
 		// Handle aliasing...
 		String resolvedName;
 		do {
+			// 找到最顶层的名字？
+
 			resolvedName = this.aliasMap.get(canonicalName);
 			if (resolvedName != null) {
 				canonicalName = resolvedName;
 			}
-		}
-		while (resolvedName != null);
+		}while (resolvedName != null);
 		return canonicalName;
 	}
 

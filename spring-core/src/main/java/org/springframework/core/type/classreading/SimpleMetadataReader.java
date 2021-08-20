@@ -36,6 +36,9 @@ import org.springframework.lang.Nullable;
  */
 final class SimpleMetadataReader implements MetadataReader {
 
+	/**
+	 * 默认为 4 | 2 | 1，即 7
+	 */
 	private static final int PARSING_OPTIONS = ClassReader.SKIP_DEBUG
 			| ClassReader.SKIP_CODE | ClassReader.SKIP_FRAMES;
 
@@ -46,7 +49,8 @@ final class SimpleMetadataReader implements MetadataReader {
 
 	SimpleMetadataReader(Resource resource, @Nullable ClassLoader classLoader) throws IOException {
 		SimpleAnnotationMetadataReadingVisitor visitor = new SimpleAnnotationMetadataReadingVisitor(classLoader);
-		getClassReader(resource).accept(visitor, PARSING_OPTIONS);
+		// getClassReader(resource) 后，类文件的字节码已经加载到 ClassReader 内
+		getClassReader(resource).accept(visitor, PARSING_OPTIONS);	// call with visitor, 7
 		this.resource = resource;
 		this.annotationMetadata = visitor.getMetadata();
 	}
@@ -55,8 +59,7 @@ final class SimpleMetadataReader implements MetadataReader {
 		try (InputStream is = resource.getInputStream()) {
 			try {
 				return new ClassReader(is);
-			}
-			catch (IllegalArgumentException ex) {
+			}catch (IllegalArgumentException ex) {
 				throw new NestedIOException("ASM ClassReader failed to parse class file - " +
 						"probably due to a new Java class file version that isn't supported yet: " + resource, ex);
 			}

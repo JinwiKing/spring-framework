@@ -280,6 +280,7 @@ public interface ListableBeanFactory extends BeanFactory {
 	/**
 	 * Return the bean instances that match the given object type (including
 	 * subclasses), judging from either bean definitions or the value of
+	 * <p>获取符合给定类型的 bean 实例（包括子类）。
 	 * {@code getObjectType} in the case of FactoryBeans.
 	 * <p><b>NOTE: This method introspects top-level beans only.</b> It does <i>not</i>
 	 * check nested beans which might match the specified type as well.

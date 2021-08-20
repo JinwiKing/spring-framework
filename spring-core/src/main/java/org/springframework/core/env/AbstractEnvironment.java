@@ -112,6 +112,9 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 	 */
 	private final MutablePropertySources propertySources;
 
+	/**
+	 * 会在构造方法中被初始化。默认是 {@link PropertySourcesPropertyResolver} 类型
+	 */
 	private final ConfigurablePropertyResolver propertyResolver;
 
 

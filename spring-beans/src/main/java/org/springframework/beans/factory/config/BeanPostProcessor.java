@@ -22,6 +22,8 @@ import org.springframework.lang.Nullable;
 /**
  * Factory hook that allows for custom modification of new bean instances &mdash;
  * for example, checking for marker interfaces or wrapping beans with proxies.
+ * <p>工厂钩子，允许用户修改bean的实例。
+ * <p>有两个方法 postProcessBeforeInitialization 和 postProcessAfterInitialization
  *
  * <p>Typically, post-processors that populate beans via marker interfaces
  * or the like will implement {@link #postProcessBeforeInitialization},
@@ -63,6 +65,9 @@ public interface BeanPostProcessor {
 	 * or a custom init-method). The bean will already be populated with property values.
 	 * The returned bean instance may be a wrapper around the original.
 	 * <p>The default implementation returns the given {@code bean} as-is.
+	 *
+	 * <p>调用这一步的情况下的 bean 已经是实例化完成的了，但是没有敬礼任何的初始化
+	 *
 	 * @param bean the new bean instance
 	 * @param beanName the name of the bean
 	 * @return the bean instance to use, either the original or a wrapped one;

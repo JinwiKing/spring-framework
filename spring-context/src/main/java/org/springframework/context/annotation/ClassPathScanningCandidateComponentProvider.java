@@ -91,8 +91,16 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
+	/**
+	 * 默认为 ** 目录下的 *.class
+	 */
 	private String resourcePattern = DEFAULT_RESOURCE_PATTERN;
 
+	/**
+	 * 如果使用默认的过滤器的情况下， Component.class 必定包含在内。
+	 * <p>这里只设置了 @Component 是因为 @Configuration 的注解上带有了 @Component 注解
+	 * 当进行过滤时，会同时扫描注解上的注解（套娃）
+	 */
 	private final List<TypeFilter> includeFilters = new ArrayList<>();
 
 	private final List<TypeFilter> excludeFilters = new ArrayList<>();
@@ -103,6 +111,9 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	@Nullable
 	private ConditionEvaluator conditionEvaluator;
 
+	/**
+	 * 构造器构造后为 {@link PathMatchingResourcePatternResolver}
+	 */
 	@Nullable
 	private ResourcePatternResolver resourcePatternResolver;
 
@@ -203,22 +214,22 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	 */
 	@SuppressWarnings("unchecked")
 	protected void registerDefaultFilters() {
+		// 这里只设置了 @Component 是因为 @Configuration 的注解上带有了 @Component 注解
+		// 当进行过滤时，会同时扫描注解上的注解（套娃）
 		this.includeFilters.add(new AnnotationTypeFilter(Component.class));
 		ClassLoader cl = ClassPathScanningCandidateComponentProvider.class.getClassLoader();
 		try {
 			this.includeFilters.add(new AnnotationTypeFilter(
 					((Class<? extends Annotation>) ClassUtils.forName("javax.annotation.ManagedBean", cl)), false));
 			logger.trace("JSR-250 'javax.annotation.ManagedBean' found and supported for component scanning");
-		}
-		catch (ClassNotFoundException ex) {
+		}catch (ClassNotFoundException ex) {
 			// JSR-250 1.1 API (as included in Java EE 6) not available - simply skip.
 		}
 		try {
 			this.includeFilters.add(new AnnotationTypeFilter(
 					((Class<? extends Annotation>) ClassUtils.forName("javax.inject.Named", cl)), false));
 			logger.trace("JSR-330 'javax.inject.Named' annotation found and supported for component scanning");
-		}
-		catch (ClassNotFoundException ex) {
+		}catch (ClassNotFoundException ex) {
 			// JSR-330 API not available - simply skip.
 		}
 	}
@@ -261,9 +272,12 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	 */
 	@Override
 	public void setResourceLoader(@Nullable ResourceLoader resourceLoader) {
-		this.resourcePatternResolver = ResourcePatternUtils.getResourcePatternResolver(resourceLoader);
+
+		// 分析时传入的 ResourceLoader 为 DefaultResourceLoader 类型
+
+		this.resourcePatternResolver = ResourcePatternUtils.getResourcePatternResolver(resourceLoader);	// 这一步封装 ResourceLoader 到 PathMatchingResourcePatternResolver 类型
 		this.metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);
-		this.componentsIndex = CandidateComponentsIndexLoader.loadIndex(this.resourcePatternResolver.getClassLoader());
+		this.componentsIndex = CandidateComponentsIndexLoader.loadIndex(this.resourcePatternResolver.getClassLoader());	// 转发给 DefaultResourceLoader
 	}
 
 	/**
@@ -308,10 +322,10 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	 * @return a corresponding Set of autodetected bean definitions
 	 */
 	public Set<BeanDefinition> findCandidateComponents(String basePackage) {
+		// this.componentsIndex 一般为 null
 		if (this.componentsIndex != null && indexSupportsIncludeFilters()) {
 			return addCandidateComponentsFromIndex(this.componentsIndex, basePackage);
-		}
-		else {
+		}else {
 			return scanCandidateComponents(basePackage);
 		}
 	}
@@ -417,6 +431,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 		try {
 			String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
 					resolveBasePackage(basePackage) + '/' + this.resourcePattern;
+			// 此处 Resource 类型应该是 UrlResource
 			Resource[] resources = getResourcePatternResolver().getResources(packageSearchPath);
 			boolean traceEnabled = logger.isTraceEnabled();
 			boolean debugEnabled = logger.isDebugEnabled();
@@ -427,6 +442,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 				if (resource.isReadable()) {
 					try {
 						MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
+						// isCandidateComponent 方法将判断类文件是否有 Spring 相关的注解
 						if (isCandidateComponent(metadataReader)) {
 							ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition(metadataReader);
 							sbd.setSource(resource);
@@ -435,32 +451,27 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 									logger.debug("Identified candidate component class: " + resource);
 								}
 								candidates.add(sbd);
-							}
-							else {
+							}else {
 								if (debugEnabled) {
 									logger.debug("Ignored because not a concrete top-level class: " + resource);
 								}
 							}
-						}
-						else {
+						}else {
 							if (traceEnabled) {
 								logger.trace("Ignored because not matching any filter: " + resource);
 							}
 						}
-					}
-					catch (Throwable ex) {
+					}catch (Throwable ex) {
 						throw new BeanDefinitionStoreException(
 								"Failed to read candidate component class: " + resource, ex);
 					}
-				}
-				else {
+				}else {
 					if (traceEnabled) {
 						logger.trace("Ignored because not readable: " + resource);
 					}
 				}
 			}
-		}
-		catch (IOException ex) {
+		}catch (IOException ex) {
 			throw new BeanDefinitionStoreException("I/O failure during classpath scanning", ex);
 		}
 		return candidates;
@@ -493,6 +504,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 		}
 		for (TypeFilter tf : this.includeFilters) {
 			if (tf.match(metadataReader, getMetadataReaderFactory())) {
+				// 需要判断符不符合条件 @Conditional，不符合条件则返回 false
 				return isConditionMatch(metadataReader);
 			}
 		}

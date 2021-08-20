@@ -52,12 +52,21 @@ public class PropertyPlaceholderHelper {
 	}
 
 
+	/**
+	 * 一般为 '${'
+	 */
 	private final String placeholderPrefix;
 
+	/**
+	 * 一般为 '}'
+	 */
 	private final String placeholderSuffix;
 
 	private final String simplePrefix;
 
+	/**
+	 * 一般为 ':'
+	 */
 	@Nullable
 	private final String valueSeparator;
 
@@ -90,12 +99,15 @@ public class PropertyPlaceholderHelper {
 		Assert.notNull(placeholderSuffix, "'placeholderSuffix' must not be null");
 		this.placeholderPrefix = placeholderPrefix;
 		this.placeholderSuffix = placeholderSuffix;
+
+		// 一把来说 simplePrefix 会被初始化为和传入的 placeholderPrefix 一致
 		String simplePrefixForSuffix = wellKnownSimplePrefixes.get(this.placeholderSuffix);
 		if (simplePrefixForSuffix != null && this.placeholderPrefix.endsWith(simplePrefixForSuffix)) {
 			this.simplePrefix = simplePrefixForSuffix;
 		}else {
 			this.simplePrefix = this.placeholderPrefix;
 		}
+
 		this.valueSeparator = valueSeparator;	// 默认为 :
 		this.ignoreUnresolvablePlaceholders = ignoreUnresolvablePlaceholders;
 	}
@@ -128,6 +140,8 @@ public class PropertyPlaceholderHelper {
 	protected String parseStringValue(
 			String value, PlaceholderResolver placeholderResolver, @Nullable Set<String> visitedPlaceholders) {
 
+		// 解析传入的 value 是否有占位符，如果有占位符，
+
 		int startIndex = value.indexOf(this.placeholderPrefix);
 		if (startIndex == -1) {
 			return value;
@@ -154,7 +168,7 @@ public class PropertyPlaceholderHelper {
 					int separatorIndex = placeholder.indexOf(this.valueSeparator);
 					if (separatorIndex != -1) {
 						String actualPlaceholder = placeholder.substring(0, separatorIndex);
-						String defaultValue = placeholder.substring(separatorIndex + this.valueSeparator.length());
+						String defaultValue = placeholder.substring(separatorIndex + this.valueSeparator.length());	// 如果占位符对应的值不存在，使用默认值
 						propVal = placeholderResolver.resolvePlaceholder(actualPlaceholder);
 						if (propVal == null) {
 							propVal = defaultValue;
@@ -170,18 +184,15 @@ public class PropertyPlaceholderHelper {
 						logger.trace("Resolved placeholder '" + placeholder + "'");
 					}
 					startIndex = result.indexOf(this.placeholderPrefix, startIndex + propVal.length());
-				}
-				else if (this.ignoreUnresolvablePlaceholders) {
+				}else if (this.ignoreUnresolvablePlaceholders) {
 					// Proceed with unprocessed value.
 					startIndex = result.indexOf(this.placeholderPrefix, endIndex + this.placeholderSuffix.length());
-				}
-				else {
+				}else {
 					throw new IllegalArgumentException("Could not resolve placeholder '" +
 							placeholder + "'" + " in value \"" + value + "\"");
 				}
 				visitedPlaceholders.remove(originalPlaceholder);
-			}
-			else {
+			}else {
 				startIndex = -1;
 			}
 		}
@@ -189,6 +200,9 @@ public class PropertyPlaceholderHelper {
 	}
 
 	private int findPlaceholderEndIndex(CharSequence buf, int startIndex) {
+
+		// 查找占位最先出现的结束后缀？
+
 		int index = startIndex + this.placeholderPrefix.length();
 		int withinNestedPlaceholder = 0;
 		while (index < buf.length()) {
@@ -196,16 +210,13 @@ public class PropertyPlaceholderHelper {
 				if (withinNestedPlaceholder > 0) {
 					withinNestedPlaceholder--;
 					index = index + this.placeholderSuffix.length();
-				}
-				else {
+				}else {
 					return index;
 				}
-			}
-			else if (StringUtils.substringMatch(buf, index, this.simplePrefix)) {
+			}else if (StringUtils.substringMatch(buf, index, this.simplePrefix)) {
 				withinNestedPlaceholder++;
 				index = index + this.simplePrefix.length();
-			}
-			else {
+			}else {
 				index++;
 			}
 		}

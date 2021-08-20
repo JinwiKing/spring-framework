@@ -74,10 +74,8 @@ public class CachingMetadataReaderFactory extends SimpleMetadataReaderFactory {
 	public CachingMetadataReaderFactory(@Nullable ResourceLoader resourceLoader) {
 		super(resourceLoader);
 		if (resourceLoader instanceof DefaultResourceLoader) {
-			this.metadataReaderCache =
-					((DefaultResourceLoader) resourceLoader).getResourceCache(MetadataReader.class);
-		}
-		else {
+			this.metadataReaderCache = ((DefaultResourceLoader) resourceLoader).getResourceCache(MetadataReader.class);
+		}else {
 			setCacheLimit(DEFAULT_CACHE_LIMIT);
 		}
 	}
@@ -92,11 +90,9 @@ public class CachingMetadataReaderFactory extends SimpleMetadataReaderFactory {
 	public void setCacheLimit(int cacheLimit) {
 		if (cacheLimit <= 0) {
 			this.metadataReaderCache = null;
-		}
-		else if (this.metadataReaderCache instanceof LocalResourceCache) {
+		}else if (this.metadataReaderCache instanceof LocalResourceCache) {
 			((LocalResourceCache) this.metadataReaderCache).setCacheLimit(cacheLimit);
-		}
-		else {
+		}else {
 			this.metadataReaderCache = new LocalResourceCache(cacheLimit);
 		}
 	}
@@ -117,6 +113,8 @@ public class CachingMetadataReaderFactory extends SimpleMetadataReaderFactory {
 	@Override
 	public MetadataReader getMetadataReader(Resource resource) throws IOException {
 		if (this.metadataReaderCache instanceof ConcurrentMap) {
+			// 一般构造方法中传入了 @DefaultResourceLoader 则 this.metadataReaderCache 为 ConcurrentMap
+
 			// No synchronization necessary...
 			MetadataReader metadataReader = this.metadataReaderCache.get(resource);
 			if (metadataReader == null) {
@@ -124,8 +122,7 @@ public class CachingMetadataReaderFactory extends SimpleMetadataReaderFactory {
 				this.metadataReaderCache.put(resource, metadataReader);
 			}
 			return metadataReader;
-		}
-		else if (this.metadataReaderCache != null) {
+		}else if (this.metadataReaderCache != null) {
 			synchronized (this.metadataReaderCache) {
 				MetadataReader metadataReader = this.metadataReaderCache.get(resource);
 				if (metadataReader == null) {

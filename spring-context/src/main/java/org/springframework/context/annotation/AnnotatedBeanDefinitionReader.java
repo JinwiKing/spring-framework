@@ -90,6 +90,8 @@ public class AnnotatedBeanDefinitionReader {
 	 * @since 3.1
 	 */
 	public AnnotatedBeanDefinitionReader(BeanDefinitionRegistry registry, Environment environment) {
+		super();	// => Object()
+
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 		Assert.notNull(environment, "Environment must not be null");
 		this.registry = registry;
@@ -264,6 +266,7 @@ public class AnnotatedBeanDefinitionReader {
 
 		// 实现了 BeanDefinition 接口
 		AnnotatedGenericBeanDefinition abd = new AnnotatedGenericBeanDefinition(beanClass);
+		// 检查 @Conditional 是否符合条件
 		if (this.conditionEvaluator.shouldSkip(abd.getMetadata())) {
 			// 这里如果使用了 Conditional 注解，并且不满足 Conditional 里面的 condition，则不将该
 			// bean 的定义加入到 bean 注册中心中
@@ -280,16 +283,15 @@ public class AnnotatedBeanDefinitionReader {
 			for (Class<? extends Annotation> qualifier : qualifiers) {
 				if (Primary.class == qualifier) {
 					abd.setPrimary(true);
-				}
-				else if (Lazy.class == qualifier) {
+				}else if (Lazy.class == qualifier) {
 					abd.setLazyInit(true);
-				}
-				else {
+				}else {
 					abd.addQualifier(new AutowireCandidateQualifier(qualifier));
 				}
 			}
 		}
 		if (customizers != null) {
+			// 自定义 bean 的定义
 			for (BeanDefinitionCustomizer customizer : customizers) {
 				customizer.customize(abd);
 			}
@@ -297,6 +299,9 @@ public class AnnotatedBeanDefinitionReader {
 
 		BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(abd, beanName);
 		definitionHolder = AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
+
+		// 这一步正式的向 bean 注册中心注册 bean 的定义，将 bean 的名字和别名关联到该 bean 的定义
+		// 注意：此时 bean 没有实例化
 		BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, this.registry);
 	}
 

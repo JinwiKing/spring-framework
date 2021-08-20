@@ -163,6 +163,7 @@ public class ClassReader {
    * @param classFile the JVMS ClassFile structure to be read.
    */
   public ClassReader(final byte[] classFile) {
+  	// 一般传入的都是字节码
     this(classFile, 0, classFile.length);
   }
 

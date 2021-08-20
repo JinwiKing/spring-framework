@@ -209,8 +209,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	public void setSerializationId(@Nullable String serializationId) {
 		if (serializationId != null) {
 			serializableFactories.put(serializationId, new WeakReference<>(this));
-		}
-		else if (this.serializationId != null) {
+		}else if (this.serializationId != null) {
 			serializableFactories.remove(this.serializationId);
 		}
 		this.serializationId = serializationId;
@@ -982,8 +981,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		if (beanDefinition instanceof AbstractBeanDefinition) {
 			try {
 				((AbstractBeanDefinition) beanDefinition).validate();
-			}
-			catch (BeanDefinitionValidationException ex) {
+			}catch (BeanDefinitionValidationException ex) {
 				throw new BeanDefinitionStoreException(beanDefinition.getResourceDescription(), beanName,
 						"Validation of bean definition failed", ex);
 			}
@@ -991,25 +989,26 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 		BeanDefinition existingDefinition = this.beanDefinitionMap.get(beanName);
 		if (existingDefinition != null) {
+			// bean 名字有对应的 BeanDefinition 的情况
+
 			if (!isAllowBeanDefinitionOverriding()) {
+				// 不允许覆盖的条件下，抛出异常。默认允许覆盖 BeanDefinition
 				throw new BeanDefinitionOverrideException(beanName, beanDefinition, existingDefinition);
-			}
-			else if (existingDefinition.getRole() < beanDefinition.getRole()) {
+			}else if (existingDefinition.getRole() < beanDefinition.getRole()) {
 				// e.g. was ROLE_APPLICATION, now overriding with ROLE_SUPPORT or ROLE_INFRASTRUCTURE
+				// 由注解 @Role 提供
 				if (logger.isInfoEnabled()) {
 					logger.info("Overriding user-defined bean definition for bean '" + beanName +
 							"' with a framework-generated bean definition: replacing [" +
 							existingDefinition + "] with [" + beanDefinition + "]");
 				}
-			}
-			else if (!beanDefinition.equals(existingDefinition)) {
+			}else if (!beanDefinition.equals(existingDefinition)) {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Overriding bean definition for bean '" + beanName +
 							"' with a different definition: replacing [" + existingDefinition +
 							"] with [" + beanDefinition + "]");
 				}
-			}
-			else {
+			}else {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Overriding bean definition for bean '" + beanName +
 							"' with an equivalent definition: replacing [" + existingDefinition +
@@ -1017,8 +1016,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 				}
 			}
 			this.beanDefinitionMap.put(beanName, beanDefinition);
-		}
-		else {
+		}else {
 			if (hasBeanCreationStarted()) {
 				// Cannot modify startup-time collection elements anymore (for stable iteration)
 				synchronized (this.beanDefinitionMap) {
@@ -1029,8 +1027,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 					this.beanDefinitionNames = updatedDefinitions;
 					removeManualSingletonName(beanName);
 				}
-			}
-			else {
+			}else {
 				// Still in startup registration phase
 				this.beanDefinitionMap.put(beanName, beanDefinition);
 				this.beanDefinitionNames.add(beanName);
@@ -1040,9 +1037,9 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		}
 
 		if (existingDefinition != null || containsSingleton(beanName)) {
+			// 如果 bean 已经被实例化的情况下，需要销毁已经实例化的 bean
 			resetBeanDefinition(beanName);
-		}
-		else if (isConfigurationFrozen()) {
+		}else if (isConfigurationFrozen()) {
 			clearByTypeCache();
 		}
 	}
@@ -1174,8 +1171,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 					this.manualSingletonNames = updatedSingletons;
 				}
 			}
-		}
-		else {
+		}else {
 			// Still in startup registration phase
 			if (condition.test(this.manualSingletonNames)) {
 				action.accept(this.manualSingletonNames);

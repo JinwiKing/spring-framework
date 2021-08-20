@@ -94,8 +94,7 @@ final class AnnotationTypeMappings {
 					}
 					addIfPossible(queue, source, repeatedAnnotation);
 				}
-			}
-			else {
+			}else {
 				addIfPossible(queue, source, metaAnnotation);
 			}
 		}
@@ -110,8 +109,7 @@ final class AnnotationTypeMappings {
 
 		try {
 			queue.addLast(new AnnotationTypeMapping(source, annotationType, ann));
-		}
-		catch (Exception ex) {
+		}catch (Exception ex) {
 			AnnotationUtils.rethrowAnnotationConfigurationException(ex);
 			if (failureLogger.isEnabled()) {
 				failureLogger.log("Failed to introspect meta-annotation " + annotationType.getName(),

@@ -33,6 +33,9 @@ import org.springframework.util.StringUtils;
  */
 public class StandardClassMetadata implements ClassMetadata {
 
+	/**
+	 * 被注解的元素的类型
+	 */
 	private final Class<?> introspectedClass;
 
 

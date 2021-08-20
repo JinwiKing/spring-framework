@@ -73,14 +73,19 @@ class ConditionEvaluator {
 
 	/**
 	 * Determine if an item should be skipped based on {@code @Conditional} annotations.
+	 * <p>检查是否满足 @Conditional 设定的条件
 	 * @param metadata the meta data
 	 * @param phase the phase of the call
 	 * @return if the item should be skipped
 	 */
 	public boolean shouldSkip(@Nullable AnnotatedTypeMetadata metadata, @Nullable ConfigurationPhase phase) {
 		if (metadata == null || !metadata.isAnnotated(Conditional.class.getName())) {
+			// 如果 metadata 是 null 或者没有 @Conditional 注解则不应该跳过
 			return false;
 		}
+
+		// 如果you @Conditional 注解的情况下，解析并获取 Condition 类，然后匹配。只要有一个 Condition
+		// 匹配成功，则返回 true 表示跳过
 
 		if (phase == null) {
 			if (metadata instanceof AnnotationMetadata &&
@@ -93,6 +98,8 @@ class ConditionEvaluator {
 		List<Condition> conditions = new ArrayList<>();
 		for (String[] conditionClasses : getConditionClasses(metadata)) {
 			for (String conditionClass : conditionClasses) {
+				// 将 @Conditional 注解的 Condition 进行实例化，然后放入 conditions 列表中
+				// 注意：Condition 的实例化不会触发任何的依赖注入！！！
 				Condition condition = getCondition(conditionClass, this.context.getClassLoader());
 				conditions.add(condition);
 			}
@@ -115,6 +122,11 @@ class ConditionEvaluator {
 
 	@SuppressWarnings("unchecked")
 	private List<String[]> getConditionClasses(AnnotatedTypeMetadata metadata) {
+
+		// 像 @ConditionalOnExpression、@ConditionalOnBean 等，都使用了注解上标记了注解的方式，这些注解
+		// 上面都标记了 @Conditional，@Conditional 注解中需要给定一个 Condition 的实现类，用该实现类表示
+		// 该 bean 是否注册条件
+
 		MultiValueMap<String, Object> attributes = metadata.getAllAnnotationAttributes(Conditional.class.getName(), true);
 		Object values = (attributes != null ? attributes.get("value") : null);
 		return (List<String[]>) (values != null ? values : Collections.emptyList());
@@ -160,6 +172,7 @@ class ConditionEvaluator {
 				return (ConfigurableListableBeanFactory) source;
 			}
 			if (source instanceof ConfigurableApplicationContext) {
+				// ConfigurableApplicationContext 一般封装了一个 DefaultListableBeanFactory
 				return (((ConfigurableApplicationContext) source).getBeanFactory());
 			}
 			return null;

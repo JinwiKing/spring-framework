@@ -252,7 +252,7 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 		if (AnnotationsScanner.isKnownEmpty(element, searchStrategy)) {
 			// 这里检查是不是元素一定没有注解，例如，桥接的方法是jvm生成的，一定不会存在
 			// 注解，所有没有必要扫描。
-			return NONE;
+			return NONE;	// 这应该是一个特例（使用的是特例模式）
 		}
 		return new TypeMappedAnnotations(element, searchStrategy, repeatableContainers, annotationFilter);
 	}

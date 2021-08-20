@@ -56,6 +56,9 @@ class ComponentScanAnnotationParser {
 
 	private final Environment environment;
 
+	/**
+	 * 一般为 {@link org.springframework.core.io.DefaultResourceLoader}
+	 */
 	private final ResourceLoader resourceLoader;
 
 	private final BeanNameGenerator beanNameGenerator;
@@ -85,8 +88,7 @@ class ComponentScanAnnotationParser {
 		ScopedProxyMode scopedProxyMode = componentScan.getEnum("scopedProxy");
 		if (scopedProxyMode != ScopedProxyMode.DEFAULT) {
 			scanner.setScopedProxyMode(scopedProxyMode);
-		}
-		else {
+		}else {
 			Class<? extends ScopeMetadataResolver> resolverClass = componentScan.getClass("scopeResolver");
 			scanner.setScopeMetadataResolver(BeanUtils.instantiateClass(resolverClass));
 		}
@@ -129,6 +131,7 @@ class ComponentScanAnnotationParser {
 				return declaringClass.equals(className);
 			}
 		});
+		// 如果扫描到 @Component，则会加入到 BeanDefinitionRegister 中
 		return scanner.doScan(StringUtils.toStringArray(basePackages));
 	}
 

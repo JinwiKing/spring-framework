@@ -189,8 +189,7 @@ public abstract class ClassUtils {
 		ClassLoader cl = null;
 		try {
 			cl = Thread.currentThread().getContextClassLoader();
-		}
-		catch (Throwable ex) {
+		}catch (Throwable ex) {
 			// Cannot access thread context ClassLoader - falling back...
 		}
 		if (cl == null) {
@@ -282,16 +281,16 @@ public abstract class ClassUtils {
 		}
 		try {
 			return Class.forName(name, false, clToUse);
-		}
-		catch (ClassNotFoundException ex) {
+		}catch (ClassNotFoundException ex) {
+			// 可能是嵌套类，如果是嵌套类则返回，否则抛异常
+
 			int lastDotIndex = name.lastIndexOf(PACKAGE_SEPARATOR);
 			if (lastDotIndex != -1) {
 				String nestedClassName =
 						name.substring(0, lastDotIndex) + NESTED_CLASS_SEPARATOR + name.substring(lastDotIndex + 1);
 				try {
 					return Class.forName(nestedClassName, false, clToUse);
-				}
-				catch (ClassNotFoundException ex2) {
+				}catch (ClassNotFoundException ex2) {
 					// Swallow - let original exception get through
 				}
 			}
@@ -322,15 +321,12 @@ public abstract class ClassUtils {
 
 		try {
 			return forName(className, classLoader);
-		}
-		catch (IllegalAccessError err) {
+		}catch (IllegalAccessError err) {
 			throw new IllegalStateException("Readability mismatch in inheritance hierarchy of class [" +
 					className + "]: " + err.getMessage(), err);
-		}
-		catch (LinkageError err) {
+		}catch (LinkageError err) {
 			throw new IllegalArgumentException("Unresolvable class definition for class [" + className + "]", err);
-		}
-		catch (ClassNotFoundException ex) {
+		}catch (ClassNotFoundException ex) {
 			throw new IllegalArgumentException("Could not find class [" + className + "]", ex);
 		}
 	}

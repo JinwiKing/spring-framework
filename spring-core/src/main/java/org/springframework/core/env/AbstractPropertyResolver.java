@@ -49,6 +49,9 @@ public abstract class AbstractPropertyResolver implements ConfigurablePropertyRe
 	@Nullable
 	private PropertyPlaceholderHelper nonStrictHelper;
 
+	/**
+	 * 由 {@link AbstractPropertyResolver#createPlaceholderHelper} 方法创建。类型为 {@link PropertyPlaceholderHelper}
+	 */
 	@Nullable
 	private PropertyPlaceholderHelper strictHelper;
 

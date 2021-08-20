@@ -76,8 +76,10 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 		// 默认父类的 StartupStep 为 ApplicationStartup.DEFAULT
 		// this 是 bean 工厂也是 bean 的注册中心
 
+		super();	// beanFactory = new DefaultListableBeanFactory();
+
 		StartupStep createAnnotatedBeanDefReader = this.getApplicationStartup().start("spring.context.annotated-bean-reader.create");
-		this.reader = new AnnotatedBeanDefinitionReader(this);
+		this.reader = new AnnotatedBeanDefinitionReader(this);	// AnnotatedBeanDefinitionReader 没有实现接口以及继承除了Object外的类
 		createAnnotatedBeanDefReader.end();
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
 	}

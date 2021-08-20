@@ -63,6 +63,7 @@ public class DefaultResourceLoader implements ResourceLoader {
 	 * @see java.lang.Thread#getContextClassLoader()
 	 */
 	public DefaultResourceLoader() {
+		super();	// => Object()
 	}
 
 	/**
@@ -71,6 +72,8 @@ public class DefaultResourceLoader implements ResourceLoader {
 	 * for using the thread context class loader at the time of actual resource access
 	 */
 	public DefaultResourceLoader(@Nullable ClassLoader classLoader) {
+		super();	// => Object()
+
 		this.classLoader = classLoader;
 	}
 
@@ -94,6 +97,8 @@ public class DefaultResourceLoader implements ResourceLoader {
 	@Override
 	@Nullable
 	public ClassLoader getClassLoader() {
+		// 如果构造方法和相关的 setter 方法都没设置的情况下，classLoader 为 null
+
 		return (this.classLoader != null ? this.classLoader : ClassUtils.getDefaultClassLoader());
 	}
 

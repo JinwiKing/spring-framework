@@ -31,6 +31,9 @@ import org.springframework.lang.Nullable;
  */
 public class PropertySourcesPropertyResolver extends AbstractPropertyResolver {
 
+	/**
+	 * 一般默认的 PropertySources 类型为 {@link MutablePropertySources}
+	 */
 	@Nullable
 	private final PropertySources propertySources;
 
@@ -40,6 +43,9 @@ public class PropertySourcesPropertyResolver extends AbstractPropertyResolver {
 	 * @param propertySources the set of {@link PropertySource} objects to use
 	 */
 	public PropertySourcesPropertyResolver(@Nullable PropertySources propertySources) {
+		// 一般传入的 PropertySources 类型为 MutablePropertySources
+
+		super();	// Object()
 		this.propertySources = propertySources;
 	}
 

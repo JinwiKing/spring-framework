@@ -59,8 +59,7 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 			if (System.getSecurityManager() != null) {
 				return AccessController.doPrivileged(
 						(PrivilegedAction<Class<?>>) factoryBean::getObjectType, getAccessControlContext());
-			}
-			else {
+			}else {
 				return factoryBean.getObjectType();
 			}
 		}
@@ -104,8 +103,7 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 					Object alreadyThere = this.factoryBeanObjectCache.get(beanName);
 					if (alreadyThere != null) {
 						object = alreadyThere;
-					}
-					else {
+					}else {
 						if (shouldPostProcess) {
 							if (isSingletonCurrentlyInCreation(beanName)) {
 								// Temporarily return non-post-processed object, not storing it yet..
@@ -114,12 +112,10 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 							beforeSingletonCreation(beanName);
 							try {
 								object = postProcessObjectFromFactoryBean(object, beanName);
-							}
-							catch (Throwable ex) {
+							}catch (Throwable ex) {
 								throw new BeanCreationException(beanName,
 										"Post-processing of FactoryBean's singleton object failed", ex);
-							}
-							finally {
+							}finally {
 								afterSingletonCreation(beanName);
 							}
 						}
@@ -160,19 +156,15 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 				AccessControlContext acc = getAccessControlContext();
 				try {
 					object = AccessController.doPrivileged((PrivilegedExceptionAction<Object>) factory::getObject, acc);
-				}
-				catch (PrivilegedActionException pae) {
+				}catch (PrivilegedActionException pae) {
 					throw pae.getException();
 				}
-			}
-			else {
+			}else {
 				object = factory.getObject();
 			}
-		}
-		catch (FactoryBeanNotInitializedException ex) {
+		}catch (FactoryBeanNotInitializedException ex) {
 			throw new BeanCurrentlyInCreationException(beanName, ex.toString());
-		}
-		catch (Throwable ex) {
+		}catch (Throwable ex) {
 			throw new BeanCreationException(beanName, "FactoryBean threw exception on object creation", ex);
 		}
 
