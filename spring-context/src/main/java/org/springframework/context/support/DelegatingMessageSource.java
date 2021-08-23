@@ -57,12 +57,11 @@ public class DelegatingMessageSource extends MessageSourceSupport implements Hie
 	@Nullable
 	public String getMessage(String code, @Nullable Object[] args, @Nullable String defaultMessage, Locale locale) {
 		if (this.parentMessageSource != null) {
+			// parentMessageSource 一般只在 ApplicationContext 有父 ApplicationContext 情况下不为 null
 			return this.parentMessageSource.getMessage(code, args, defaultMessage, locale);
-		}
-		else if (defaultMessage != null) {
+		}else if (defaultMessage != null) {
 			return renderDefaultMessage(defaultMessage, args, locale);
-		}
-		else {
+		}else {
 			return null;
 		}
 	}

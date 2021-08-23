@@ -292,6 +292,7 @@ public class DefaultLifecycleProcessor implements LifecycleProcessor, BeanFactor
 	}
 
 	private boolean matchesBeanType(Class<?> targetType, String beanName, BeanFactory beanFactory) {
+		// 因为 DefaultListableBeanFactory 所以 getType 看 AbstractBeanFactory 的实现
 		Class<?> beanType = beanFactory.getType(beanName);
 		return (beanType != null && targetType.isAssignableFrom(beanType));
 	}

@@ -408,8 +408,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		ApplicationEvent applicationEvent;
 		if (event instanceof ApplicationEvent) {
 			applicationEvent = (ApplicationEvent) event;
-		}
-		else {
+		}else {
 			applicationEvent = new PayloadApplicationEvent<>(this, event);
 			if (eventType == null) {
 				eventType = ((PayloadApplicationEvent<?>) applicationEvent).getResolvableType();
@@ -417,10 +416,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		}
 
 		// Multicast right now if possible - or lazily once the multicaster is initialized
+		// earlyApplicationEvents 在注册监听器后，earlyApplicationEvents 就被置为 null
 		if (this.earlyApplicationEvents != null) {
 			this.earlyApplicationEvents.add(applicationEvent);
-		}
-		else {
+		}else {
 			getApplicationEventMulticaster().multicastEvent(applicationEvent, eventType);
 		}
 
@@ -428,8 +427,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		if (this.parent != null) {
 			if (this.parent instanceof AbstractApplicationContext) {
 				((AbstractApplicationContext) this.parent).publishEvent(event, eventType);
-			}
-			else {
+			}else {
 				this.parent.publishEvent(event);
 			}
 		}
@@ -563,6 +561,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			try {
 				// Allows post-processing of the bean factory in context subclasses.
 				// 模板方法，默认为空方法
+				// AnnotationConfigApplicationContext 继承链中没有重写该方法
 				postProcessBeanFactory(beanFactory);
 
 				StartupStep beanPostProcess = this.applicationStartup.start("spring.context.beans.post-process");
@@ -576,18 +575,22 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				beanPostProcess.end();
 
 				// Initialize message source for this context.
+				// 初始化对国际化的支持
 				initMessageSource();
 
 				// Initialize event multicaster for this context.
+				// 初始化应用事件广播器
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
-				onRefresh();	// 当前类为空方法
+				// AnnotationConfigApplicationContext 继承链中没有重写
+				onRefresh();
 
 				// Check for listener beans and register them.
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
+				// 这一步包含预实例化单例的 bean
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
@@ -795,6 +798,14 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void initMessageSource() {
 		ConfigurableListableBeanFactory beanFactory = getBeanFactory();
+
+		// 先检查是否有名为 messageSource 这个 bean
+		// 		有该 bean 的情况下设置该 MessageSource 的父 MessageSource 为当前父 ApplicationContext 的 MessageSource，
+		// 		当然是父存在的情况以及存在的 MessageSource 没有设置父 MessageSource 情况下
+		//
+		// 		没有的情况下创建一个类型为 DelegatingMessageSource 的 MessageSource（大部分情况都是走这一步？）
+
+
 		if (beanFactory.containsLocalBean(MESSAGE_SOURCE_BEAN_NAME)) {
 			this.messageSource = beanFactory.getBean(MESSAGE_SOURCE_BEAN_NAME, MessageSource.class);
 			// Make MessageSource aware of parent MessageSource.
@@ -809,9 +820,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			if (logger.isTraceEnabled()) {
 				logger.trace("Using MessageSource [" + this.messageSource + "]");
 			}
-		}
-		else {
+		}else {
 			// Use empty MessageSource to be able to accept getMessage calls.
+			// 使用空的 MessageSource 来避免对 null 的判断
 			DelegatingMessageSource dms = new DelegatingMessageSource();
 			dms.setParentMessageSource(getInternalParentMessageSource());
 			this.messageSource = dms;
@@ -829,14 +840,19 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void initApplicationEventMulticaster() {
 		ConfigurableListableBeanFactory beanFactory = getBeanFactory();
+
+		// 检查是否存在名为 applicationEventMulticaster 的 ApplicationEventMulticaster
+		// 		有的情况下直接使用
+		//
+		//		没有的情况下创建一个类型为 SimpleApplicationEventMulticaster 的 ApplicationEventMulticaster
+
 		if (beanFactory.containsLocalBean(APPLICATION_EVENT_MULTICASTER_BEAN_NAME)) {
 			this.applicationEventMulticaster =
 					beanFactory.getBean(APPLICATION_EVENT_MULTICASTER_BEAN_NAME, ApplicationEventMulticaster.class);
 			if (logger.isTraceEnabled()) {
 				logger.trace("Using ApplicationEventMulticaster [" + this.applicationEventMulticaster + "]");
 			}
-		}
-		else {
+		}else {
 			this.applicationEventMulticaster = new SimpleApplicationEventMulticaster(beanFactory);
 			beanFactory.registerSingleton(APPLICATION_EVENT_MULTICASTER_BEAN_NAME, this.applicationEventMulticaster);
 			if (logger.isTraceEnabled()) {
@@ -853,14 +869,19 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void initLifecycleProcessor() {
 		ConfigurableListableBeanFactory beanFactory = getBeanFactory();
+
+		// 难道 LifecycleProcessor 可以在多次 refresh 操作中生存下来？
+		// 检查是否有名字为 lifecycleProcessor 的 LifecycleProcessor
+		//		有点化直接获取并使用
+		//		否则实例化一个类型为 DefaultLifecycleProcessor 的 LifecycleProcessor
+
 		if (beanFactory.containsLocalBean(LIFECYCLE_PROCESSOR_BEAN_NAME)) {
 			this.lifecycleProcessor =
 					beanFactory.getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
 			if (logger.isTraceEnabled()) {
 				logger.trace("Using LifecycleProcessor [" + this.lifecycleProcessor + "]");
 			}
-		}
-		else {
+		}else {
 			DefaultLifecycleProcessor defaultProcessor = new DefaultLifecycleProcessor();
 			defaultProcessor.setBeanFactory(beanFactory);
 			this.lifecycleProcessor = defaultProcessor;
@@ -942,6 +963,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.freezeConfiguration();
 
 		// Instantiate all remaining (non-lazy-init) singletons.
+		// 预实例化单例的 bean
 		beanFactory.preInstantiateSingletons();
 	}
 
@@ -1424,8 +1446,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	@Nullable
 	protected MessageSource getInternalParentMessageSource() {
-		return (getParent() instanceof AbstractApplicationContext ?
-				((AbstractApplicationContext) getParent()).messageSource : getParent());
+
+		ApplicationContext appCtx;
+
+		return ((appCtx = getParent()) instanceof AbstractApplicationContext ?
+				((AbstractApplicationContext) appCtx).messageSource : appCtx);
 	}
 
 

@@ -24,6 +24,8 @@ import org.springframework.lang.Nullable;
  * Strategy interface for resolving messages, with support for the parameterization
  * and internationalization of such messages.
  *
+ * <p>决定信息的策略接口，支持这些消息的参数化和国际化</p>
+ *
  * <p>Spring provides two out-of-the-box implementations for production:
  * <ul>
  * <li>{@link org.springframework.context.support.ResourceBundleMessageSource}: built
@@ -41,6 +43,8 @@ public interface MessageSource {
 
 	/**
 	 * Try to resolve the message. Return default message if no message was found.
+	 * <p>尝试决定消息。如果消息没有找到返回默认的消息</p>
+	 *
 	 * @param code the message code to look up, e.g. 'calculator.noRateSet'.
 	 * MessageSource users are encouraged to base message names on qualified class
 	 * or package names, avoiding potential conflicts and ensuring maximum clarity.

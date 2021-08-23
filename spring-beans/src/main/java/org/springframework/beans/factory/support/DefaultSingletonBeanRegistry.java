@@ -119,11 +119,14 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		Assert.notNull(beanName, "Bean name must not be null");
 		Assert.notNull(singletonObject, "Singleton object must not be null");
 		synchronized (this.singletonObjects) {
+
+			// 检查给定 bean 的名字是否已经被用于绑定，如果已经被用于绑定，则抛出异常
 			Object oldObject = this.singletonObjects.get(beanName);
 			if (oldObject != null) {
 				throw new IllegalStateException("Could not register object [" + singletonObject +
 						"] under bean name '" + beanName + "': there is already object [" + oldObject + "] bound");
 			}
+
 			addSingleton(beanName, singletonObject);
 		}
 	}
@@ -222,6 +225,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 			Object singletonObject = this.singletonObjects.get(beanName);
 			if (singletonObject == null) {
 				if (this.singletonsCurrentlyInDestruction) {
+					// 如果单例正在进行被销毁的过程，则抛出异常
 					throw new BeanCreationNotAllowedException(beanName,
 							"Singleton bean creation not allowed while singletons of this factory are in destruction " +
 							"(Do not request a bean from a BeanFactory in a destroy method implementation!)");
@@ -238,8 +242,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 				try {
 					singletonObject = singletonFactory.getObject();
 					newSingleton = true;
-				}
-				catch (IllegalStateException ex) {
+				}catch (IllegalStateException ex) {
 					// Has the singleton object implicitly appeared in the meantime ->
 					// if yes, proceed with it since the exception indicates that state.
 					singletonObject = this.singletonObjects.get(beanName);
@@ -418,6 +421,13 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	public void registerDependentBean(String beanName, String dependentBeanName) {
 		String canonicalName = canonicalName(beanName);
 
+		// 这里 ConcurrentHashMap 也要显示加锁？
+		// ！！！注意细节：
+		// 虽然外层是 ConcurrentHashMap，但是内部使用的是 LinkedHashSet，LinkedHashSet不具有线
+		// 程安全性质
+
+		// 这里有点难以优化，因为这里存在分别加锁的情况
+
 		synchronized (this.dependentBeanMap) {
 			Set<String> dependentBeans =
 					this.dependentBeanMap.computeIfAbsent(canonicalName, k -> new LinkedHashSet<>(8));
@@ -436,33 +446,46 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	/**
 	 * Determine whether the specified dependent bean has been registered as
 	 * dependent on the given bean or on any of its transitive dependencies.
-	 * @param beanName the name of the bean to check
-	 * @param dependentBeanName the name of the dependent bean
+	 * <p>确定是否指定的依赖 bean 已经被注册为需要依赖待检测的 bean 或已经在待检测的 bean 的传递依赖中
+	 * @param beanName the name of the bean to check。将要检查的 bean 的名字
+	 * @param dependentBeanName the name of the dependent bean。检查该 beanName 的依赖
 	 * @since 4.0
 	 */
 	protected boolean isDependent(String beanName, String dependentBeanName) {
+		// 目前情况 beanName  ---依赖于--->  dependentBeanName
+
+		// 模式  A -> B -> C -> A 循环！！！  A 将检测到 B 已经出现在传递依赖链中
+
+		// ConcurrentHashMap ?
 		synchronized (this.dependentBeanMap) {
 			return isDependent(beanName, dependentBeanName, null);
 		}
 	}
 
 	private boolean isDependent(String beanName, String dependentBeanName, @Nullable Set<String> alreadySeen) {
+		// 目前情况 beanName  ---依赖于--->  dependentBeanName
+
 		if (alreadySeen != null && alreadySeen.contains(beanName)) {
 			return false;
 		}
-		String canonicalName = canonicalName(beanName);
+		String canonicalName = canonicalName(beanName);	// 通过这里获取根名字
 		Set<String> dependentBeans = this.dependentBeanMap.get(canonicalName);
 		if (dependentBeans == null) {
 			return false;
 		}
 		if (dependentBeans.contains(dependentBeanName)) {
+			// 环依赖出现
 			return true;
 		}
+
+		// 检查传递依赖
 		for (String transitiveDependency : dependentBeans) {
 			if (alreadySeen == null) {
 				alreadySeen = new HashSet<>();
 			}
 			alreadySeen.add(beanName);
+
+			// 检查 transitiveDependency 是否依赖于 dependentBeanName
 			if (isDependent(transitiveDependency, dependentBeanName, alreadySeen)) {
 				return true;
 			}
