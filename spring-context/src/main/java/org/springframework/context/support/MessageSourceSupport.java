@@ -113,24 +113,29 @@ public abstract class MessageSourceSupport {
 	 * @return the formatted message (with resolved arguments)
 	 */
 	protected String formatMessage(String msg, @Nullable Object[] args, Locale locale) {
+		// alwaysUseMessageFormat 默认为 false
 		if (!isAlwaysUseMessageFormat() && ObjectUtils.isEmpty(args)) {
 			return msg;
 		}
 		MessageFormat messageFormat = null;
+
+		// 此代码段可以稍微优化一下
+		// messageFormatsPerMessage 底层为 HashMap
 		synchronized (this.messageFormatsPerMessage) {
+
+			// computeIfAbsent ?
 			Map<Locale, MessageFormat> messageFormatsPerLocale = this.messageFormatsPerMessage.get(msg);
 			if (messageFormatsPerLocale != null) {
 				messageFormat = messageFormatsPerLocale.get(locale);
-			}
-			else {
+			}else {
 				messageFormatsPerLocale = new HashMap<>();
 				this.messageFormatsPerMessage.put(msg, messageFormatsPerLocale);
 			}
+
 			if (messageFormat == null) {
 				try {
 					messageFormat = createMessageFormat(msg, locale);
-				}
-				catch (IllegalArgumentException ex) {
+				}catch (IllegalArgumentException ex) {
 					// Invalid message format - probably not intended for formatting,
 					// rather using a message structure with no arguments involved...
 					if (isAlwaysUseMessageFormat()) {

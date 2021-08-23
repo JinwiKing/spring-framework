@@ -138,8 +138,7 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 		for (ApplicationListener<?> listener : getApplicationListeners(event, type)) {
 			if (executor != null) {
 				executor.execute(() -> invokeListener(listener, event));
-			}
-			else {
+			}else {
 				invokeListener(listener, event);
 			}
 		}
