@@ -457,6 +457,7 @@ public @interface Configuration {
 	 * a.k.a. "@Bean Lite Mode" (see {@link Bean @Bean's javadoc}). It is therefore
 	 * behaviorally equivalent to removing the {@code @Configuration} stereotype.
 	 * @since 5.2
+	 *
 	 * <p>这个属性是用于在标记了 @Configuration 注解的类内使用 @Bean 注解定义的 bean 是否在
 	 * 该注解了 @Bean 的方法被调用时是否返回 spring 的容器内实例化的 bean。也就是说 @Bean 注
 	 * 解的方法将使用 aop 方式来负责返回值。该功能模式是打开的。

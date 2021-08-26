@@ -189,8 +189,7 @@ public class ClassReader {
    * @param classFileOffset the offset in byteBuffer of the first byte of the ClassFile to be read.
    * @param checkClassVersion whether to check the class version or not.
    */
-  ClassReader(
-      final byte[] classFileBuffer, final int classFileOffset, final boolean checkClassVersion) {
+  ClassReader(final byte[] classFileBuffer, final int classFileOffset, final boolean checkClassVersion) {
     this.classFileBuffer = classFileBuffer;
     this.b = classFileBuffer;
     // Check the class' major_version. This field is after the magic and minor_version fields, which
@@ -417,6 +416,8 @@ public class ClassReader {
    * Makes the given visitor visit the JVMS ClassFile structure passed to the constructor of this
    * {@link ClassReader}.
    *
+   * <p>通过给定的 ClassVisitor 读取 JVM 的 ClassFile 结构
+   *
    * @param classVisitor the visitor that must visit this class.
    * @param parsingOptions the options to use to parse this class. One or more of {@link
    *     #SKIP_CODE}, {@link #SKIP_DEBUG}, {@link #SKIP_FRAMES} or {@link #EXPAND_FRAMES}.
@@ -439,10 +440,7 @@ public class ClassReader {
    * @param parsingOptions the options to use to parse this class. One or more of {@link
    *     #SKIP_CODE}, {@link #SKIP_DEBUG}, {@link #SKIP_FRAMES} or {@link #EXPAND_FRAMES}.
    */
-  public void accept(
-      final ClassVisitor classVisitor,
-      final Attribute[] attributePrototypes,
-      final int parsingOptions) {
+  public void accept(final ClassVisitor classVisitor, final Attribute[] attributePrototypes, final int parsingOptions) {
     Context context = new Context();
     context.attributePrototypes = attributePrototypes;
     context.parsingOptions = parsingOptions;

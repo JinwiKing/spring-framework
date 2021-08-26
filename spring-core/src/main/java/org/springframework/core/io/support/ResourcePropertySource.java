@@ -54,7 +54,9 @@ public class ResourcePropertySource extends PropertiesPropertySource {
 	 * loaded from the given encoded resource.
 	 */
 	public ResourcePropertySource(String name, EncodedResource resource) throws IOException {
+		// super 的构造方法没有特殊的操作
 		super(name, PropertiesLoaderUtils.loadProperties(resource));
+
 		this.resourceName = getNameForResource(resource.getResource());
 	}
 
@@ -178,6 +180,7 @@ public class ResourcePropertySource extends PropertiesPropertySource {
 	private static String getNameForResource(Resource resource) {
 		String name = resource.getDescription();
 		if (!StringUtils.hasText(name)) {
+			// 生成一个默认的名字，格式为：类的简单名@该实例的 hash code
 			name = resource.getClass().getSimpleName() + "@" + System.identityHashCode(resource);
 		}
 		return name;

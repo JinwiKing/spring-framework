@@ -55,6 +55,7 @@ class ConditionEvaluator {
 	 */
 	public ConditionEvaluator(@Nullable BeanDefinitionRegistry registry,
 			@Nullable Environment environment, @Nullable ResourceLoader resourceLoader) {
+		super();	// -> Object()
 
 		this.context = new ConditionContextImpl(registry, environment, resourceLoader);
 	}
@@ -84,7 +85,7 @@ class ConditionEvaluator {
 			return false;
 		}
 
-		// 如果you @Conditional 注解的情况下，解析并获取 Condition 类，然后匹配。只要有一个 Condition
+		// 如果有 @Conditional 注解的情况下，解析并获取 Condition 类，然后匹配。只要有一个 Condition
 		// 匹配成功，则返回 true 表示跳过
 
 		if (phase == null) {
@@ -107,6 +108,7 @@ class ConditionEvaluator {
 
 		AnnotationAwareOrderComparator.sort(conditions);
 
+		// 子要有一个 Condition 符合条件，则返回 true 表示应该跳过该 ConfigurationClass
 		for (Condition condition : conditions) {
 			ConfigurationPhase requiredPhase = null;
 			if (condition instanceof ConfigurationCondition) {
@@ -160,12 +162,25 @@ class ConditionEvaluator {
 				@Nullable Environment environment, @Nullable ResourceLoader resourceLoader) {
 
 			this.registry = registry;
+
+			// 推断出 ConfigurableListableBeanFactory，DefaultListableBeanFactory 是 ConfigurableListableBeanFactory 实例
 			this.beanFactory = deduceBeanFactory(registry);
+
+			// 推断出 Environment
+			// DefaultListableBeanFactory 类型 BeanDefinitionRegistry 返回的是 StandardEnvironment 类型的 Environment
 			this.environment = (environment != null ? environment : deduceEnvironment(registry));
+
+			// 推断 ResourceLoader
+			// DefaultListableBeanFactory 类型 BeanDefinitionRegistry 返回的是 DefaultResourceLoader 类型的 ResourceLoader
 			this.resourceLoader = (resourceLoader != null ? resourceLoader : deduceResourceLoader(registry));
+
+			// 推断 ClassLoader
 			this.classLoader = deduceClassLoader(resourceLoader, this.beanFactory);
 		}
 
+		/**
+		 * 推断出 ConfigurableListableBeanFactory。
+		 */
 		@Nullable
 		private ConfigurableListableBeanFactory deduceBeanFactory(@Nullable BeanDefinitionRegistry source) {
 			if (source instanceof ConfigurableListableBeanFactory) {

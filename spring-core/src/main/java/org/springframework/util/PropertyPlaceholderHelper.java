@@ -32,6 +32,8 @@ import org.springframework.lang.Nullable;
  * A placeholder takes the form {@code ${name}}. Using {@code PropertyPlaceholderHelper}
  * these placeholders can be substituted for user-supplied values.
  *
+ * <p>用于处理含有占位符的值的工具类。占位符格式为：${name}
+ *
  * <p>Values for substitution can be supplied using a {@link Properties} instance or
  * using a {@link PlaceholderResolver}.
  *
@@ -100,9 +102,9 @@ public class PropertyPlaceholderHelper {
 		this.placeholderPrefix = placeholderPrefix;
 		this.placeholderSuffix = placeholderSuffix;
 
-		// 一把来说 simplePrefix 会被初始化为和传入的 placeholderPrefix 一致
 		String simplePrefixForSuffix = wellKnownSimplePrefixes.get(this.placeholderSuffix);
 		if (simplePrefixForSuffix != null && this.placeholderPrefix.endsWith(simplePrefixForSuffix)) {
+			// placeholderSuffix 为 } 时会走这里。simplePrefixForSuffix 为 {
 			this.simplePrefix = simplePrefixForSuffix;
 		}else {
 			this.simplePrefix = this.placeholderPrefix;
@@ -144,6 +146,7 @@ public class PropertyPlaceholderHelper {
 
 		int startIndex = value.indexOf(this.placeholderPrefix);
 		if (startIndex == -1) {
+			// 没有占位符的情况直接返回
 			return value;
 		}
 
@@ -153,6 +156,8 @@ public class PropertyPlaceholderHelper {
 			if (endIndex != -1) {
 				String placeholder = result.substring(startIndex + this.placeholderPrefix.length(), endIndex);
 				String originalPlaceholder = placeholder;
+
+				// 循环引用检查
 				if (visitedPlaceholders == null) {
 					visitedPlaceholders = new HashSet<>(4);
 				}
@@ -160,22 +165,30 @@ public class PropertyPlaceholderHelper {
 					throw new IllegalArgumentException(
 							"Circular placeholder reference '" + originalPlaceholder + "' in property definitions");
 				}
+
+				// 递归检查有没有内嵌的占位符
 				// Recursive invocation, parsing placeholders contained in the placeholder key.
 				placeholder = parseStringValue(placeholder, placeholderResolver, visitedPlaceholders);
 				// Now obtain the value for the fully resolved key...
 				String propVal = placeholderResolver.resolvePlaceholder(placeholder);
 				if (propVal == null && this.valueSeparator != null) {
+					// 占位符解析不到对应的属性值的情况
+
 					int separatorIndex = placeholder.indexOf(this.valueSeparator);
 					if (separatorIndex != -1) {
+						// 有默认值的情况下使用默认值
+
 						String actualPlaceholder = placeholder.substring(0, separatorIndex);
 						String defaultValue = placeholder.substring(separatorIndex + this.valueSeparator.length());	// 如果占位符对应的值不存在，使用默认值
-						propVal = placeholderResolver.resolvePlaceholder(actualPlaceholder);
+						propVal = placeholderResolver.resolvePlaceholder(actualPlaceholder);	// 套娃解析？
 						if (propVal == null) {
 							propVal = defaultValue;
 						}
 					}
 				}
 				if (propVal != null) {
+					// 再次解析，如果获取属性值还有占位符的情况下，继续套娃解析
+
 					// Recursive invocation, parsing placeholders contained in the
 					// previously resolved placeholder value.
 					propVal = parseStringValue(propVal, placeholderResolver, visitedPlaceholders);
@@ -185,6 +198,8 @@ public class PropertyPlaceholderHelper {
 					}
 					startIndex = result.indexOf(this.placeholderPrefix, startIndex + propVal.length());
 				}else if (this.ignoreUnresolvablePlaceholders) {
+					// 默认 ignoreUnresolvablePlaceholders 为 false
+
 					// Proceed with unprocessed value.
 					startIndex = result.indexOf(this.placeholderPrefix, endIndex + this.placeholderSuffix.length());
 				}else {
@@ -193,6 +208,7 @@ public class PropertyPlaceholderHelper {
 				}
 				visitedPlaceholders.remove(originalPlaceholder);
 			}else {
+				// 如果没有匹配到占位符的后缀，则认为不是占位符，直接返回
 				startIndex = -1;
 			}
 		}
@@ -203,7 +219,9 @@ public class PropertyPlaceholderHelper {
 
 		// 查找占位最先出现的结束后缀？
 
+		// 先偏移掉前缀
 		int index = startIndex + this.placeholderPrefix.length();
+
 		int withinNestedPlaceholder = 0;
 		while (index < buf.length()) {
 			if (StringUtils.substringMatch(buf, index, this.placeholderSuffix)) {
@@ -214,6 +232,8 @@ public class PropertyPlaceholderHelper {
 					return index;
 				}
 			}else if (StringUtils.substringMatch(buf, index, this.simplePrefix)) {
+				// 看起来占位符还可以内嵌占位符
+
 				withinNestedPlaceholder++;
 				index = index + this.simplePrefix.length();
 			}else {

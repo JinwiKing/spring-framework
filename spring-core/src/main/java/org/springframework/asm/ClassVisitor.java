@@ -68,6 +68,8 @@ public abstract class ClassVisitor {
    *     null.
    */
   public ClassVisitor(final int api, final ClassVisitor classVisitor) {
+  	super();	// -> Object()
+
     if (api != Opcodes.ASM9
         && api != Opcodes.ASM8
         && api != Opcodes.ASM7
@@ -100,12 +102,9 @@ public abstract class ClassVisitor {
    *     Type#getInternalName()}). May be {@literal null}.
    */
   public void visit(
-      final int version,
-      final int access,
-      final String name,
-      final String signature,
-      final String superName,
-      final String[] interfaces) {
+      final int version, final int access,
+      final String name, final String signature,
+      final String superName, final String[] interfaces) {
     if (api < Opcodes.ASM8 && (access & Opcodes.ACC_RECORD) != 0) {
       throw new UnsupportedOperationException("Records requires ASM8");
     }

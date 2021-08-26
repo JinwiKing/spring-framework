@@ -118,11 +118,14 @@ public class CachingMetadataReaderFactory extends SimpleMetadataReaderFactory {
 			// No synchronization necessary...
 			MetadataReader metadataReader = this.metadataReaderCache.get(resource);
 			if (metadataReader == null) {
+
+				// 核心操作依然由父类提供
 				metadataReader = super.getMetadataReader(resource);
 				this.metadataReaderCache.put(resource, metadataReader);
 			}
 			return metadataReader;
 		}else if (this.metadataReaderCache != null) {
+			// 如果不是 ConcurrentMap，需要加锁保证操作线程安全
 			synchronized (this.metadataReaderCache) {
 				MetadataReader metadataReader = this.metadataReaderCache.get(resource);
 				if (metadataReader == null) {
@@ -131,8 +134,9 @@ public class CachingMetadataReaderFactory extends SimpleMetadataReaderFactory {
 				}
 				return metadataReader;
 			}
-		}
-		else {
+		}else {
+			// 如果缓存的 map 为 null，则不管后续的缓存，都直接交给父类的实现
+
 			return super.getMetadataReader(resource);
 		}
 	}

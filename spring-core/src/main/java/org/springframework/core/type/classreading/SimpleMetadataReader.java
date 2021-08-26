@@ -48,10 +48,17 @@ final class SimpleMetadataReader implements MetadataReader {
 
 
 	SimpleMetadataReader(Resource resource, @Nullable ClassLoader classLoader) throws IOException {
+		super();	// -> Object()
+
+		// 读取字节码方式采用回调方式进行读取
+
 		SimpleAnnotationMetadataReadingVisitor visitor = new SimpleAnnotationMetadataReadingVisitor(classLoader);
+
 		// getClassReader(resource) 后，类文件的字节码已经加载到 ClassReader 内
 		getClassReader(resource).accept(visitor, PARSING_OPTIONS);	// call with visitor, 7
 		this.resource = resource;
+
+		// 一般返回 SimpleAnnotationMetadata 类型的 AnnotationMetadata
 		this.annotationMetadata = visitor.getMetadata();
 	}
 

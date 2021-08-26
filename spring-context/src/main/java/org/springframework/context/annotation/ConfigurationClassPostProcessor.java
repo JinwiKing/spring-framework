@@ -113,16 +113,25 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 	private SourceExtractor sourceExtractor = new PassThroughSourceExtractor();
 
+	/**
+	 * 默认 {@link FailFastProblemReporter} 类型的实例
+	 */
 	private ProblemReporter problemReporter = new FailFastProblemReporter();
 
 	@Nullable
 	private Environment environment;
 
+	/**
+	 * 默认 {@link DefaultResourceLoader}
+	 */
 	private ResourceLoader resourceLoader = new DefaultResourceLoader();
 
 	@Nullable
 	private ClassLoader beanClassLoader = ClassUtils.getDefaultClassLoader();
 
+	/**
+	 * 默认 {@link CachingMetadataReaderFactory} 类型实例
+	 */
 	private MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory();
 
 	private boolean setMetadataReaderFactoryCalled = false;
@@ -137,9 +146,17 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	private boolean localBeanNameGeneratorSet = false;
 
 	/* Using short class names as default bean names by default. */
+	/**
+	 * 默认 {@link AnnotationBeanNameGenerator} 的实例。
+	 * <p>Using short class names as default bean names by default.
+	 */
 	private BeanNameGenerator componentScanBeanNameGenerator = AnnotationBeanNameGenerator.INSTANCE;
 
 	/* Using fully qualified class names as default bean names by default. */
+	/**
+	 * 默认 {@link FullyQualifiedAnnotationBeanNameGenerator} 的实例。
+	 * <p>Using fully qualified class names as default bean names by default.
+	 */
 	private BeanNameGenerator importBeanNameGenerator = IMPORT_BEAN_NAME_GENERATOR;
 
 	private ApplicationStartup applicationStartup = ApplicationStartup.DEFAULT;
@@ -246,6 +263,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		}
 		this.registriesPostProcessed.add(registryId);
 
+		// 核心代码
 		processConfigBeanDefinitions(registry);
 	}
 
@@ -282,7 +300,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		for (String beanName : candidateNames) {
 			BeanDefinition beanDef = registry.getBeanDefinition(beanName);
 
-			// beanDef.getAttribute(ConfigurationClassUtils.CONFIGURATION_CLASS_ATTRIBUTE) != null 由 第二个条件块进行关联
+			// beanDef.getAttribute(ConfigurationClassUtils.CONFIGURATION_CLASS_ATTRIBUTE) != null 由第二个条件块进行关联
+			// (ConfigurationClassUtils.CONFIGURATION_CLASS_ATTRIBUTE 仅用于表示 beanDef 是否已经被处理过
 			if (beanDef.getAttribute(ConfigurationClassUtils.CONFIGURATION_CLASS_ATTRIBUTE) != null) {
 				// 一个 bean 有多个对应的名字，可以防止 configCandidates 列表中多次加入同一个 BeanDefinition
 				if (logger.isDebugEnabled()) {
@@ -310,13 +329,16 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 		// Detect any custom bean name generation strategy supplied through the enclosing application context
 		SingletonBeanRegistry sbr = null;
+		// DefaultListableBeanFactory 是 SingletonBeanRegistry 的实例
 		if (registry instanceof SingletonBeanRegistry) {
-			// DefaultListableBeanFactory 不是 SingletonBeanRegistry 的实例
 
 			sbr = (SingletonBeanRegistry) registry;
+			// localBeanNameGeneratorSet 默认为 false
 			if (!this.localBeanNameGeneratorSet) {
+				// 获取名字为 org.springframework.context.annotation.internalConfigurationBeanNameGenerator 的单例
 				BeanNameGenerator generator = (BeanNameGenerator) sbr.getSingleton(
 						AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR);
+				// 测试时发现获取的 generator 是 null
 				if (generator != null) {
 					this.componentScanBeanNameGenerator = generator;
 					this.importBeanNameGenerator = generator;
@@ -336,6 +358,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
 		Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
 		do {
+			// 进一步解析 BeanDefinitionHolder 是否可以解析出更多的 BeanDefinition
+
 			StartupStep processConfig = this.applicationStartup.start("spring.context.config-classes.parse");
 
 			// 这一步进一步解析配置类
@@ -348,13 +372,13 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			configClasses.removeAll(alreadyParsed);
 
 			// Read the model and create bean definitions based on its content
-			// TODO analyzing 1
 			if (this.reader == null) {
 				// 默认第一次都是为 null
 				this.reader = new ConfigurationClassBeanDefinitionReader(
 						registry, this.sourceExtractor, this.resourceLoader, this.environment,
 						this.importBeanNameGenerator, parser.getImportRegistry());
 			}
+			// TODO analyzing 1
 			this.reader.loadBeanDefinitions(configClasses);
 			alreadyParsed.addAll(configClasses);
 			processConfig.tag("classCount", () -> String.valueOf(configClasses.size())).end();

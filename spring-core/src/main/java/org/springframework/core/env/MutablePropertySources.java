@@ -126,7 +126,10 @@ public class MutablePropertySources implements PropertySources {
 	 * than the named relative property source.
 	 */
 	public void addBefore(String relativePropertySourceName, PropertySource<?> propertySource) {
+		// 判断名字不重复
 		assertLegalRelativeAddition(relativePropertySourceName, propertySource);
+
+		// propertySourceList 底层为 CopyOnWriteArrayList
 		synchronized (this.propertySourceList) {
 			removeIfPresent(propertySource);
 			int index = assertPresentAndGetIndex(relativePropertySourceName);

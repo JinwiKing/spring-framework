@@ -307,7 +307,7 @@ public abstract class AnnotationConfigUtils {
 	}
 
 	/**
-	 * 获取的注解允许重复？
+	 * 从容器注解中获取特定注解
 	 * <p>如 {@link ComponentScans} 和 {@link ComponentScan}
 	 */
 	static Set<AnnotationAttributes> attributesForRepeatable(AnnotationMetadata metadata,

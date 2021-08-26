@@ -150,8 +150,7 @@ public class AnnotationAttributes extends LinkedHashMap<String, Object> {
 		if (classLoader != null) {
 			try {
 				return (Class<? extends Annotation>) classLoader.loadClass(annotationType);
-			}
-			catch (ClassNotFoundException ex) {
+			}catch (ClassNotFoundException ex) {
 				// Annotation Class not resolvable
 			}
 		}

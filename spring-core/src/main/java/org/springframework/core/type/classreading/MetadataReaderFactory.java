@@ -24,6 +24,9 @@ import org.springframework.core.io.Resource;
  * Factory interface for {@link MetadataReader} instances.
  * Allows for caching a MetadataReader per original resource.
  *
+ * <p> MetadataReader 的工厂接口，允许返回缓存的 MetadataReader 实例
+ *
+ *
  * @author Juergen Hoeller
  * @since 2.5
  * @see SimpleMetadataReaderFactory

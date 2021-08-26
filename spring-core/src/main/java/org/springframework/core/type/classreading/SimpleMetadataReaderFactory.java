@@ -77,10 +77,13 @@ public class SimpleMetadataReaderFactory implements MetadataReaderFactory {
 		try {
 			String resourcePath = ResourceLoader.CLASSPATH_URL_PREFIX +
 					ClassUtils.convertClassNameToResourcePath(className) + ClassUtils.CLASS_FILE_SUFFIX;
+			// 用到的一般是 DefaultResourceLoader
 			Resource resource = this.resourceLoader.getResource(resourcePath);
+
+			// 这一步重要
+			// 这一步在 CachingMetadataReaderFactory 有重写
 			return getMetadataReader(resource);
-		}
-		catch (FileNotFoundException ex) {
+		}catch (FileNotFoundException ex) {
 			// Maybe an inner class name using the dot name syntax? Need to use the dollar syntax here...
 			// ClassUtils.forName has an equivalent check for resolution into Class references later on.
 			int lastDotIndex = className.lastIndexOf('.');

@@ -65,6 +65,9 @@ final class SimpleAnnotationMetadataReadingVisitor extends ClassVisitor {
 
 	private List<SimpleMethodMetadata> annotatedMethods = new ArrayList<>();
 
+	/**
+	 * 在 visitEnd 方法中初始化
+	 */
 	@Nullable
 	private SimpleAnnotationMetadata metadata;
 
@@ -141,6 +144,7 @@ final class SimpleAnnotationMetadataReadingVisitor extends ClassVisitor {
 		String[] memberClassNames = StringUtils.toStringArray(this.memberClassNames);
 		MethodMetadata[] annotatedMethods = this.annotatedMethods.toArray(new MethodMetadata[0]);
 		MergedAnnotations annotations = MergedAnnotations.of(this.annotations);
+
 		this.metadata = new SimpleAnnotationMetadata(this.className, this.access,
 				this.enclosingClassName, this.superClassName, this.independentInnerClass,
 				this.interfaceNames, memberClassNames, annotatedMethods, annotations);

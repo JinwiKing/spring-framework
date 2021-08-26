@@ -68,6 +68,7 @@ class ComponentScanAnnotationParser {
 
 	public ComponentScanAnnotationParser(Environment environment, ResourceLoader resourceLoader,
 			BeanNameGenerator beanNameGenerator, BeanDefinitionRegistry registry) {
+		super();	// -> Object()
 
 		this.environment = environment;
 		this.resourceLoader = resourceLoader;
@@ -76,10 +77,16 @@ class ComponentScanAnnotationParser {
 	}
 
 
+	/**
+	 * 用于解析 {@link ComponentScan} 注解
+	 */
 	public Set<BeanDefinitionHolder> parse(AnnotationAttributes componentScan, final String declaringClass) {
+
+		// componentScan.getBoolean("useDefaultFilters") 默认为 true
 		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(this.registry,
 				componentScan.getBoolean("useDefaultFilters"), this.environment, this.resourceLoader);
 
+		// TODO: analysis k0
 		Class<? extends BeanNameGenerator> generatorClass = componentScan.getClass("nameGenerator");
 		boolean useInheritedGenerator = (BeanNameGenerator.class == generatorClass);
 		scanner.setBeanNameGenerator(useInheritedGenerator ? this.beanNameGenerator :
