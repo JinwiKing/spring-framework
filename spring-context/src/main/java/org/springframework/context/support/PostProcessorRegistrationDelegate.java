@@ -59,6 +59,17 @@ final class PostProcessorRegistrationDelegate {
 	public static void invokeBeanFactoryPostProcessors(
 			ConfigurableListableBeanFactory beanFactory, List<BeanFactoryPostProcessor> beanFactoryPostProcessors) {
 
+		// 具体流程
+		// beanFactory 是 BeanDefinitionRegistry 的实现情况：
+		//		1、遍历传入的 beanFactoryPostProcessors 列表
+		//			1.1、先调用列表中实现了 BeanDefinitionRegistryPostProcessor 接口的 postProcessBeanDefinitionRegistry 方法
+		//		2、如果 beanFactory 中由实现了 BeanDefinitionRegistryPostProcessor 接口
+		//			2.1、如果这个的类同时实现了 PriorityOrdered 接口，则实例化出一个实例，放入列表中，然后对这些实例进行优先级由大到小的方式调用 postProcessBeanDefinitionRegistry 方法
+		// 			2.1、实例化剩余的实现了 BeanDefinitionRegistryPostProcessor 接口的类，放入列表中，然后对这些实例进行优先级由大到小的方式调用 postProcessBeanDefinitionRegistry 方法
+		//		3、迭代检查 beanFactory 是否又新注册了实现了 BeanDefinitionRegistryPostProcessor 接口的类，迭代进行实例化、排序、回调
+		//		4、调用 BeanFactoryPostProcessor 接口的 postProcessBeanFactory 方法
+		//		5、检查 beanFactory 中是否有没有进行回调过的 BeanFactoryPostProcessor 的类进行回调（主要是处理回调 BeanDefinitionRegistryPostProcessor 是可能有注册了新的 BeanFactoryPostProcessor）
+
 		// WARNING: Although it may appear that the body of this method can be easily
 		// refactored to avoid the use of multiple loops and multiple lists, the use
 		// of multiple lists and multiple passes over the names of processors is
@@ -81,6 +92,8 @@ final class PostProcessorRegistrationDelegate {
 
 		if (beanFactory instanceof BeanDefinitionRegistry) {
 			// 进入该代码块需要 bean 工厂同时具有 bean 定义注册功能时才进入
+
+			// 进入该代码块是为了进行 BeanDefinitionRegistryPostProcessors 的回调
 
 			BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 			List<BeanFactoryPostProcessor> regularPostProcessors = new ArrayList<>();

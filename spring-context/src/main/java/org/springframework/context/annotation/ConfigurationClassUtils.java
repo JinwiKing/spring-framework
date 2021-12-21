@@ -84,9 +84,9 @@ abstract class ConfigurationClassUtils {
 	 * Check whether the given bean definition is a candidate for a configuration class
 	 * (or a nested component class declared within a configuration/component class,
 	 * to be auto-registered as well), and mark it accordingly.
-	 * <p>检查给定的 BeanDefinition 是不是带有 @Configuration 注解或者有内嵌于当前的 BeanDefinition
-	 * 的组件等
-	 * <p>这一步直检查了是否带有 @Configuration 注解，并没有检查是否符合 @Conditional 的条件
+	 * <p>检查给定的 BeanDefinition 是不是带有 @Configuration 注解的类或者有内嵌于当前 BeanDefinition
+	 * 的组件类等
+	 * <p>这一步直检查了是否带有 @Configuration 注解，但并没有检查是否符合 @Conditional 的条件
 	 * @param beanDef the bean definition to check
 	 * @param metadataReaderFactory the current factory in use by the caller
 	 * @return whether the candidate qualifies as (any kind of) configuration class
@@ -98,10 +98,12 @@ abstract class ConfigurationClassUtils {
 
 		String className = beanDef.getBeanClassName();
 		if (className == null || beanDef.getFactoryMethodName() != null) {
-			// 即将生成的 bean 是由某个方法生成的，而且 @Configuration 注解不能用于方法上
+			// 如果该 BeanDefinition 是是一个工厂方法或者不是一个类，则不符合条件
+			// @Configuration 注解不能用于方法上
 			return false;
 		}
 
+		// ！！！如果不知道 beanDef 的具体类型，看下默认的条件判断，里面有 ClassReader 将注解等相关属性从 ClassFile 中读出来
 		AnnotationMetadata metadata;
 		if (beanDef instanceof AnnotatedBeanDefinition &&
 				className.equals(((AnnotatedBeanDefinition) beanDef).getMetadata().getClassName())) {
@@ -120,6 +122,7 @@ abstract class ConfigurationClassUtils {
 			metadata = AnnotationMetadata.introspect(beanClass);
 		}else {
 			try {
+				// MetadataReader 类型一般为 SimpleMetadataReader
 				MetadataReader metadataReader = metadataReaderFactory.getMetadataReader(className);
 				metadata = metadataReader.getAnnotationMetadata();
 			}catch (IOException ex) {

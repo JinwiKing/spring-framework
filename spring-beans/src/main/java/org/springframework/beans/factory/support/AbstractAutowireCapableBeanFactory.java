@@ -1203,10 +1203,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// Candidate constructors for autowiring?
 		Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
-		if (ctors != null || mbd.getResolvedAutowireMode() == AUTOWIRE_CONSTRUCTOR ||
-				mbd.hasConstructorArgumentValues() || !ObjectAbstractApplicationContexttils.isEmpty(args)) {
-			return autowireConstructor(beanName, mbd, ctors, args);
-		}
+		// 编译出错？
+//		if (ctors != null || mbd.getResolvedAutowireMode() == AUTOWIRE_CONSTRUCTOR ||
+//				mbd.hasConstructorArgumentValues() || !ObjectAbstractApplicationContexttils.isEmpty(args)) {
+//			return autowireConstructor(beanName, mbd, ctors, args);
+//		}
 
 		// Preferred constructors for default construction?
 		ctors = mbd.getPreferredConstructors();

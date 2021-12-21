@@ -551,6 +551,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
+			// AnnotationConfigApplicationContext 的情况
+			//			无参构造方式下，返回的是 DefaultListableApplicationContext 类型的实例
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
@@ -677,7 +679,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @see #getBeanFactory()
 	 */
 	protected ConfigurableListableBeanFactory obtainFreshBeanFactory() {
+
+		// AnnotationConfigApplication 使用 GenericApplicationContext 的实现
 		refreshBeanFactory();
+
+		// AnnotationConfigApplication 使用 GenericApplicationContext 的实现
+		//		如果使用无参构造方法，则返回的是 DefaultListableApplicationContext 的实例
 		return getBeanFactory();
 	}
 

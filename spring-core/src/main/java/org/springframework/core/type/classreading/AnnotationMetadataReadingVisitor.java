@@ -74,6 +74,9 @@ public class AnnotationMetadataReadingVisitor extends ClassMetadataReadingVisito
 
 
 	public AnnotationMetadataReadingVisitor(@Nullable ClassLoader classLoader) {
+		// 继承链中没有特殊操作
+		super();
+
 		this.classLoader = classLoader;
 	}
 
@@ -97,14 +100,23 @@ public class AnnotationMetadataReadingVisitor extends ClassMetadataReadingVisito
 	@Override
 	@Nullable
 	public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+		// 调用此方法时，还处于 visiting 的过程中，需要注意的时 visitEnd 的方法
+
 		if (!visible) {
 			return null;
 		}
 		String className = Type.getType(desc).getClassName();
+		// 如果是 java.lang.annotation 包下的注解则忽略
 		if (AnnotationUtils.isInJavaLangAnnotationPackage(className)) {
 			return null;
 		}
 		this.annotationSet.add(className);
+
+		// ！！！注意，这一步的 this 是 ClassVisitor，而不是 AnnotationVisitor
+		// 这个方法会返回一个 AnnotationVisitor 用于对观察的注解做进一步处理
+
+		// 链式观察者模式？ 责任链式模式
+		// 注意这一步，使用新的责任链收集注解到 metaAnnotationMap 中！！！
 		return new AnnotationAttributesReadingVisitor(
 				className, this.attributesMap, this.metaAnnotationMap, this.classLoader);
 	}
@@ -124,6 +136,7 @@ public class AnnotationMetadataReadingVisitor extends ClassMetadataReadingVisito
 	@Override
 	public boolean hasMetaAnnotation(String metaAnnotationType) {
 		if (AnnotationUtils.isInJavaLangAnnotationPackage(metaAnnotationType)) {
+			// java.lang.annotation 不受 spring 控制，所以一定没有
 			return false;
 		}
 		Collection<Set<String>> allMetaTypes = this.metaAnnotationMap.values();

@@ -64,6 +64,7 @@ public class StandardEnvironment extends AbstractEnvironment {
 	 * Create a new {@code StandardEnvironment} instance.
 	 */
 	public StandardEnvironment() {
+		super();
 	}
 
 	/**

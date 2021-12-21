@@ -57,7 +57,11 @@ final class AnnotationAttributesReadingVisitor extends RecursiveAnnotationAttrib
 			MultiValueMap<String, AnnotationAttributes> attributesMap, Map<String, Set<String>> metaAnnotationMap,
 			@Nullable ClassLoader classLoader) {
 
+		// ！！！注意：新的责任链！！！
+
 		super(annotationType, new AnnotationAttributes(annotationType, classLoader), classLoader);
+
+		// ！！！这里拿了传入的 attributesMap 引用，要注意该类的 visitEnd 方法，该方法调用时会将相关属性同步到 attributesMap 中！！！
 		this.attributesMap = attributesMap;
 		this.metaAnnotationMap = metaAnnotationMap;
 	}
@@ -72,8 +76,7 @@ final class AnnotationAttributesReadingVisitor extends RecursiveAnnotationAttrib
 			List<AnnotationAttributes> attributeList = this.attributesMap.get(this.annotationType);
 			if (attributeList == null) {
 				this.attributesMap.add(this.annotationType, this.attributes);
-			}
-			else {
+			}else {
 				attributeList.add(0, this.attributes);
 			}
 			if (!AnnotationUtils.isInJavaLangAnnotationPackage(annotationClass.getName())) {
@@ -82,6 +85,7 @@ final class AnnotationAttributesReadingVisitor extends RecursiveAnnotationAttrib
 					if (!ObjectUtils.isEmpty(metaAnnotations)) {
 						Set<Annotation> visited = new LinkedHashSet<>();
 						for (Annotation metaAnnotation : metaAnnotations) {
+							// 递归的记录注解上的注解
 							recursivelyCollectMetaAnnotations(visited, metaAnnotation);
 						}
 						if (!visited.isEmpty()) {
@@ -92,8 +96,7 @@ final class AnnotationAttributesReadingVisitor extends RecursiveAnnotationAttrib
 							this.metaAnnotationMap.put(annotationClass.getName(), metaAnnotationTypeNames);
 						}
 					}
-				}
-				catch (Throwable ex) {
+				}catch (Throwable ex) {
 					if (logger.isDebugEnabled()) {
 						logger.debug("Failed to introspect meta-annotations on " + annotationClass + ": " + ex);
 					}

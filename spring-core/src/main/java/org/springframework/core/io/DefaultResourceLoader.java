@@ -158,17 +158,15 @@ public class DefaultResourceLoader implements ResourceLoader {
 
 		if (location.startsWith("/")) {
 			return getResourceByPath(location);
-		}
-		else if (location.startsWith(CLASSPATH_URL_PREFIX)) {
+		}else if (location.startsWith(CLASSPATH_URL_PREFIX)) {
+			// classpath: 在这里解析
 			return new ClassPathResource(location.substring(CLASSPATH_URL_PREFIX.length()), getClassLoader());
-		}
-		else {
+		}else {
 			try {
 				// Try to parse the location as a URL...
 				URL url = new URL(location);
 				return (ResourceUtils.isFileURL(url) ? new FileUrlResource(url) : new UrlResource(url));
-			}
-			catch (MalformedURLException ex) {
+			}catch (MalformedURLException ex) {
 				// No URL -> resolve as resource path.
 				return getResourceByPath(location);
 			}

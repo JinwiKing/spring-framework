@@ -139,8 +139,17 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 	 * @see #customizePropertySources(MutablePropertySources)
 	 */
 	protected AbstractEnvironment(MutablePropertySources propertySources) {
+		super();	// -> Object()
+
+		// 由无参进入该构造方法 propertySources 的类型为 MutablePropertySources
+
 		this.propertySources = propertySources;
+
+		// 属性决定器
+		// 默认类型为 PropertySourcesPropertyResolver
 		this.propertyResolver = createPropertyResolver(propertySources);
+
+		// 自定义属性，交由子类做具体的自定义
 		customizePropertySources(propertySources);
 	}
 
@@ -152,6 +161,7 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 	 * @see #getPropertyResolver()
 	 */
 	protected ConfigurablePropertyResolver createPropertyResolver(MutablePropertySources propertySources) {
+		// 构造方法没有特殊操作
 		return new PropertySourcesPropertyResolver(propertySources);
 	}
 
@@ -446,16 +456,14 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 	public Map<String, Object> getSystemProperties() {
 		try {
 			return (Map) System.getProperties();
-		}
-		catch (AccessControlException ex) {
+		}catch (AccessControlException ex) {
 			return (Map) new ReadOnlySystemAttributesMap() {
 				@Override
 				@Nullable
 				protected String getSystemAttribute(String attributeName) {
 					try {
 						return System.getProperty(attributeName);
-					}
-					catch (AccessControlException ex) {
+					}catch (AccessControlException ex) {
 						if (logger.isInfoEnabled()) {
 							logger.info("Caught AccessControlException when accessing system property '" +
 									attributeName + "'; its value will be returned [null]. Reason: " + ex.getMessage());
@@ -627,6 +635,7 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 
 	@Override
 	public String resolveRequiredPlaceholders(String text) throws IllegalArgumentException {
+		// PropertySourcesPropertyResolver 是 AbstractPropertyResolver
 		return this.propertyResolver.resolveRequiredPlaceholders(text);
 	}
 

@@ -168,6 +168,9 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 			// 一般来说 useDefaultFilters 为 true，所以会执行 registerDefaultFilters() 方法
 			registerDefaultFilters();
 			// 方法调用完成以后， includeFilters 必定包含 Component.class
+
+			// 如果没有重写的情况下，registerDefaultFilters 方法添加了 Component、
+			// javax.annotation.ManagedBean、javax.inject.Named 注解到 includeFilters 中
 		}
 		setEnvironment(environment);
 		setResourceLoader(resourceLoader);

@@ -28,6 +28,9 @@ import org.springframework.lang.Nullable;
  * In addition to {@link ConfigurableBeanFactory}, it provides facilities to
  * analyze and modify bean definitions, and to pre-instantiate singletons.
  *
+ * <p>只是配置 BeanFactory，不配置 BeanDefinition 的
+ * <p>决定依赖是由 BeanFactory 做决定的
+ *
  * <p>This subinterface of {@link org.springframework.beans.factory.BeanFactory}
  * is not meant to be used in normal application code: Stick to
  * {@link org.springframework.beans.factory.BeanFactory} or

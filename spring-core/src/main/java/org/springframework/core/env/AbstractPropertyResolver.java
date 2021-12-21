@@ -57,10 +57,19 @@ public abstract class AbstractPropertyResolver implements ConfigurablePropertyRe
 
 	private boolean ignoreUnresolvableNestedPlaceholders = false;
 
+	/**
+	 * 默认为 ${
+	 */
 	private String placeholderPrefix = SystemPropertyUtils.PLACEHOLDER_PREFIX;
 
+	/**
+	 * 默认为 }
+	 */
 	private String placeholderSuffix = SystemPropertyUtils.PLACEHOLDER_SUFFIX;
 
+	/**
+	 * 默认为 :
+	 */
 	@Nullable
 	private String valueSeparator = SystemPropertyUtils.VALUE_SEPARATOR;
 
@@ -207,6 +216,8 @@ public abstract class AbstractPropertyResolver implements ConfigurablePropertyRe
 
 	@Override
 	public String resolveRequiredPlaceholders(String text) throws IllegalArgumentException {
+
+		// strictHelper 默认为 null，且没有 setter 提供注入，所以一定会至少一次进入下面的 if 判断
 		if (this.strictHelper == null) {
 			this.strictHelper = createPlaceholderHelper(false);
 		}

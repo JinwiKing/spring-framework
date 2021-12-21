@@ -117,6 +117,9 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	@Nullable
 	private ResourcePatternResolver resourcePatternResolver;
 
+	/**
+	 * 构造方法初始化为 {@link CachingMetadataReaderFactory} 类的实例
+	 */
 	@Nullable
 	private MetadataReaderFactory metadataReaderFactory;
 
@@ -275,8 +278,12 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 
 		// 分析时传入的 ResourceLoader 为 DefaultResourceLoader 类型
 
-		this.resourcePatternResolver = ResourcePatternUtils.getResourcePatternResolver(resourceLoader);	// 这一步封装 ResourceLoader 到 PathMatchingResourcePatternResolver 类型
+		// 这一步封装 ResourceLoader 到 PathMatchingResourcePatternResolver 类型
+		this.resourcePatternResolver = ResourcePatternUtils.getResourcePatternResolver(resourceLoader);
+
 		this.metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);
+
+
 		this.componentsIndex = CandidateComponentsIndexLoader.loadIndex(this.resourcePatternResolver.getClassLoader());	// 转发给 DefaultResourceLoader
 	}
 

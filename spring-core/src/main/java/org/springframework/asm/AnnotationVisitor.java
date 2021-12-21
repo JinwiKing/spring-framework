@@ -68,6 +68,8 @@ public abstract class AnnotationVisitor {
    *     calls. May be {@literal null}.
    */
   public AnnotationVisitor(final int api, final AnnotationVisitor annotationVisitor) {
+  	super();	// -> Object()
+
     if (api != Opcodes.ASM9
         && api != Opcodes.ASM8
         && api != Opcodes.ASM7

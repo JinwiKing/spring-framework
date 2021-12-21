@@ -72,6 +72,8 @@ public abstract class PropertySource<T> {
 	 * @param source the source object
 	 */
 	public PropertySource(String name, T source) {
+		super();	// -> Object()
+
 		Assert.hasText(name, "Property source name must contain at least one character");
 		Assert.notNull(source, "Property source must not be null");
 		this.name = name;

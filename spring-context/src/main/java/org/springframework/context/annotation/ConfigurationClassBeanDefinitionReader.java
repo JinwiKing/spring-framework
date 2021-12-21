@@ -109,12 +109,16 @@ class ConfigurationClassBeanDefinitionReader {
 			ResourceLoader resourceLoader, Environment environment, BeanNameGenerator importBeanNameGenerator,
 			ImportRegistry importRegistry) {
 
+		super();	// -> Object()
+
 		this.registry = registry;
 		this.sourceExtractor = sourceExtractor;
 		this.resourceLoader = resourceLoader;
 		this.environment = environment;
 		this.importBeanNameGenerator = importBeanNameGenerator;
 		this.importRegistry = importRegistry;
+
+		// @Conditional 演算器
 		this.conditionEvaluator = new ConditionEvaluator(registry, environment, resourceLoader);
 	}
 

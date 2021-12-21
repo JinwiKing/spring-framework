@@ -59,6 +59,8 @@ public abstract class ResourcePatternUtils {
 	 * @see PathMatchingResourcePatternResolver
 	 */
 	public static ResourcePatternResolver getResourcePatternResolver(@Nullable ResourceLoader resourceLoader) {
+
+		// DefaultResourceLoader 不是 ResourcePatternResolver 实例
 		if (resourceLoader instanceof ResourcePatternResolver) {
 			return (ResourcePatternResolver) resourceLoader;
 		}else if (resourceLoader != null) {

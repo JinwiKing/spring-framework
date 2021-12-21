@@ -78,6 +78,7 @@ public class AnnotationBeanNameGenerator implements BeanNameGenerator {
 	@Override
 	public String generateBeanName(BeanDefinition definition, BeanDefinitionRegistry registry) {
 		if (definition instanceof AnnotatedBeanDefinition) {
+			// 父类的方法
 			String beanName = determineBeanNameFromAnnotation((AnnotatedBeanDefinition) definition);
 			if (StringUtils.hasText(beanName)) {
 				// Explicit bean name found.
@@ -90,6 +91,7 @@ public class AnnotationBeanNameGenerator implements BeanNameGenerator {
 
 	/**
 	 * Derive a bean name from one of the annotations on the class.
+	 * <p>从类中任意一个注解中派生一个 bean 的名字
 	 * @param annotatedDef the annotation-aware bean definition
 	 * @return the bean name, or {@code null} if none is found
 	 */
@@ -167,6 +169,8 @@ public class AnnotationBeanNameGenerator implements BeanNameGenerator {
 		String beanClassName = definition.getBeanClassName();
 		Assert.state(beanClassName != null, "No bean class name set");
 		String shortClassName = ClassUtils.getShortName(beanClassName);
+
+		// java beans 包下的工具
 		return Introspector.decapitalize(shortClassName);
 	}
 
