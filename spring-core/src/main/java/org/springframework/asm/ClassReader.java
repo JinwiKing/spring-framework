@@ -314,7 +314,7 @@ public class ClassReader {
     if (inputStream == null) {
       throw new IOException("Class not found");
     }
-    int bufferSize = calculateBufferSize(inputStream);
+    int bufferSize = calculateBufferSize(inputStream);	// 最小缓冲大小为4Kb
     try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
       byte[] data = new byte[bufferSize];
       int bytesRead;
@@ -607,6 +607,7 @@ public class ClassReader {
         // Parse num_element_value_pairs and element_value_pairs and visit these values.
         currentAnnotationOffset =
             readElementValues(
+            		// TODO: 读取注解
                 classVisitor.visitAnnotation(annotationDescriptor, /* visible = */ true),
                 currentAnnotationOffset,
                 /* named = */ true,
@@ -625,6 +626,7 @@ public class ClassReader {
         // Parse num_element_value_pairs and element_value_pairs and visit these values.
         currentAnnotationOffset =
             readElementValues(
+					// TODO: 读取注解
                 classVisitor.visitAnnotation(annotationDescriptor, /* visible = */ false),
                 currentAnnotationOffset,
                 /* named = */ true,
@@ -645,6 +647,7 @@ public class ClassReader {
         // Parse num_element_value_pairs and element_value_pairs and visit these values.
         currentAnnotationOffset =
             readElementValues(
+					// TODO: 读取注解
                 classVisitor.visitTypeAnnotation(
                     context.currentTypeAnnotationTarget,
                     context.currentTypeAnnotationTargetPath,
@@ -669,6 +672,7 @@ public class ClassReader {
         // Parse num_element_value_pairs and element_value_pairs and visit these values.
         currentAnnotationOffset =
             readElementValues(
+					// TODO: 读取注解
                 classVisitor.visitTypeAnnotation(
                     context.currentTypeAnnotationTarget,
                     context.currentTypeAnnotationTargetPath,

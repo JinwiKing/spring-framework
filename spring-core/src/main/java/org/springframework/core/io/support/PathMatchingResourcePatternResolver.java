@@ -514,6 +514,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 			if (rootDirUrl.getProtocol().startsWith(ResourceUtils.URL_PROTOCOL_VFS)) {
 				result.addAll(VfsResourceMatchingDelegate.findMatchingResources(rootDirUrl, subPattern, getPathMatcher()));
 			}else if (ResourceUtils.isJarURL(rootDirUrl) || isJarResource(rootDirResource)) {
+				// ！！！解析 jar war zip vfszip wsjar 下的类
 				// 如果协议是 jar war zip vfszip wsjar 的情况下，进入这里
 				// isJarResource 默认为 false
 				result.addAll(doFindPathMatchingJarResources(rootDirResource, rootDirUrl, subPattern));
