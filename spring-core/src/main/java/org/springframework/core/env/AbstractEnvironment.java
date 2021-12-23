@@ -34,6 +34,10 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
+ * AbstractEnvironment 声明中也实现了 PropertyResolver, 也就是 AbstractEnvironment 具有属性决定的
+ * 功能。AbstractEnvironment 的构造器中传入一个 PropertySources（属性源）的对象，这样看来，AbstractEnvironment
+ * 像是一个适配器，将 PropertySources 适配到 PropertyResolver 的功能中
+ *
  * Abstract base class for {@link Environment} implementations. Supports the notion of
  * reserved default profile names and enables specifying active and default profiles
  * through the {@link #ACTIVE_PROFILES_PROPERTY_NAME} and
@@ -113,7 +117,8 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 	private final MutablePropertySources propertySources;
 
 	/**
-	 * 会在构造方法中被初始化。默认是 {@link PropertySourcesPropertyResolver} 类型
+	 * 会在构造方法中被初始化。默认是 {@link PropertySourcesPropertyResolver} 类型。
+	 * AbstractEnvironment 直接使用该对象作为适配 PropertyResolver 接口的功能
 	 */
 	private final ConfigurablePropertyResolver propertyResolver;
 

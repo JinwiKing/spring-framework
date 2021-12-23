@@ -131,15 +131,17 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 			// stop the old bean factory first
 
 			destroyBeans();
-			closeBeanFactory();
+			closeBeanFactory();	// 此处会使this.beanFactory = null
 		}
 
 		// start a new bean factory after shutdown the previous bean factory
 
 		try {
-			DefaultListableBeanFactory beanFactory = createBeanFactory();
+			DefaultListableBeanFactory beanFactory = createBeanFactory();	// 没有重写的情况下为 DefaultListableBeanFactory 实例
 			beanFactory.setSerializationId(getId());
 			customizeBeanFactory(beanFactory);	// 自定义bean factory
+
+			// ClassPathXmlApplicationContext 使用 AbstractXmlApplicationContext 的实现
 			loadBeanDefinitions(beanFactory);	// 关键点！！！ 子类需要实现 bean 定义的加载
 			this.beanFactory = beanFactory;
 		}

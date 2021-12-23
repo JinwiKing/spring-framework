@@ -117,6 +117,9 @@ import org.springframework.util.ReflectionUtils;
  * e.g. "mypackage/myresource.dat"), unless the {@link #getResourceByPath}
  * method is overridden in a subclass.
  *
+ * <br/>
+ * AbstractApplicationContext 也是一个 ResourceLoader（资源加载器），加载应用上下文的资源
+ *
  * @author Rod Johnson
  * @author Juergen Hoeller
  * @author Mark Fisher
@@ -210,7 +213,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	@Nullable
 	private Thread shutdownHook;
 
-	/** ResourcePatternResolver used by this context. */
+	/**
+	 * ResourcePatternResolver used by this context.
+	 * <br>
+	 * 默认是 {@link PathMatchingResourcePatternResolver}
+	 * */
 	private ResourcePatternResolver resourcePatternResolver;
 
 	/** LifecycleProcessor for managing the lifecycle of beans within this context. */
@@ -641,6 +648,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		// Initialize any placeholder property sources in the context environment.
 		// 模板方法
 		// AnnotationConfigApplicationContext 没有覆盖
+		// ClassPathXmlApplicationContext 没有覆盖
 		initPropertySources();
 
 		// Validate that all properties marked as required are resolvable:
@@ -660,6 +668,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 		// Allow for the collection of early ApplicationEvents,
 		// to be published once the multicaster is available...
+		// 允许一系列的早期的 ApplicationEvent，将在广播器器准备后将事件广播出去
 		this.earlyApplicationEvents = new LinkedHashSet<>();
 	}
 
@@ -681,6 +690,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	protected ConfigurableListableBeanFactory obtainFreshBeanFactory() {
 
 		// AnnotationConfigApplication 使用 GenericApplicationContext 的实现
+		// ClassPathXmlApplicationContext 使用 AbstractRefreshableApplicationContext 的实现
 		refreshBeanFactory();
 
 		// AnnotationConfigApplication 使用 GenericApplicationContext 的实现

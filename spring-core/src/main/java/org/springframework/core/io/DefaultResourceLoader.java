@@ -159,7 +159,7 @@ public class DefaultResourceLoader implements ResourceLoader {
 		if (location.startsWith("/")) {
 			return getResourceByPath(location);
 		}else if (location.startsWith(CLASSPATH_URL_PREFIX)) {
-			// classpath: 在这里解析
+			// ‘classpath:’ 在这里解析
 			return new ClassPathResource(location.substring(CLASSPATH_URL_PREFIX.length()), getClassLoader());
 		}else {
 			try {

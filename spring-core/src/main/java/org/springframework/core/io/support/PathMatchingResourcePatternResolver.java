@@ -299,10 +299,10 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 			int prefixEnd = (locationPattern.startsWith("war:") ? locationPattern.indexOf("*/") + 1 :
 					locationPattern.indexOf(':') + 1);
 			if (getPathMatcher().isPattern(locationPattern.substring(prefixEnd))) {
+				// 检查到的路径是包含通配符
 				// a file pattern
 				return findPathMatchingResources(locationPattern);
-			}
-			else {
+			}else {
 				// a single resource with the given name
 				return new Resource[] {getResourceLoader().getResource(locationPattern)};
 			}
