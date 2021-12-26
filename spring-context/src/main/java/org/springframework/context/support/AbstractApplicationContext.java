@@ -561,6 +561,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			// Tell the subclass to refresh the internal bean factory.
 			// AnnotationConfigApplicationContext 的情况
 			//			无参构造方式下，返回的是 DefaultListableApplicationContext 类型的实例
+			// obtainFreshBeanFactory 方法里默认会调用 refreshBeanFactory 方法，而 ClassPathXmlApplicationContext 和
+			// AnnotationConfigApplication 对该方法都是先销毁了目前 BeanFactory 里面实例，会导致获取 Bean 的过程马上失效，
+			// 但 refresh 方法在接口上没有明确规定该方法的一致性（可能存在在销毁后，Bean 无法正常建立，但是旧的 Bean 已经处于无法访问的状态）
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
@@ -593,7 +596,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
+				// 模板方法
 				// AnnotationConfigApplicationContext 继承链中没有重写
+				// ClassPathXmlApplicationContext 继承链中没有重写
 				onRefresh();
 
 				// Check for listener beans and register them.
@@ -808,6 +813,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * <p>Must be called before any instantiation of application beans.
 	 */
 	protected void registerBeanPostProcessors(ConfigurableListableBeanFactory beanFactory) {
+		// 注意 PostProcessorRegistrationDelegate，这是一个包级别访问类
 		PostProcessorRegistrationDelegate.registerBeanPostProcessors(beanFactory, this);
 	}
 
@@ -937,6 +943,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 		// Do not initialize FactoryBeans here: We need to leave all regular beans
 		// uninitialized to let post-processors apply to them!
+		// 这里不能实例化 FactoryBean，我们需要让所有普通未初始化的 Bean 好让后置处理器调用它们
 		String[] listenerBeanNames = getBeanNamesForType(ApplicationListener.class, true, false);
 		for (String listenerBeanName : listenerBeanNames) {
 			getApplicationEventMulticaster().addApplicationListenerBean(listenerBeanName);
@@ -1002,6 +1009,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		initLifecycleProcessor();
 
 		// Propagate refresh to lifecycle processor first.
+		// LifecycleProcessor 在上一步 initLifecycleProcessor 进行了初始化
 		getLifecycleProcessor().onRefresh();
 
 		// Publish the final event.
@@ -1206,8 +1214,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		if (!this.active.get()) {
 			if (this.closed.get()) {
 				throw new IllegalStateException(getDisplayName() + " has been closed already");
-			}
-			else {
+			}else {
 				throw new IllegalStateException(getDisplayName() + " has not been refreshed yet");
 			}
 		}

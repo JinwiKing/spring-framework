@@ -281,17 +281,20 @@ final class PostProcessorRegistrationDelegate {
 		// https://github.com/spring-projects/spring-framework/issues?q=PostProcessorRegistrationDelegate+is%3Aclosed+label%3A%22status%3A+declined%22
 
 		// 这里不用害怕中途会出现新的 BeanPostProcessor，因为没有相应的 bean 定义接口提供给客户端
+		// 这里直接从
 		// TODO: analysis -1
 		String[] postProcessorNames = beanFactory.getBeanNamesForType(BeanPostProcessor.class, true, false);
 
 		// Register BeanPostProcessorChecker that logs an info message when
 		// a bean is created during BeanPostProcessor instantiation, i.e. when
 		// a bean is not eligible for getting processed by all BeanPostProcessors.
+		// BeanPostProcessorChecker 应该主要用于防止用户在注册 BeanPostProcessor 过程中，往 BeanFactory 丢入新的 BeanPostProcessor？
 		int beanProcessorTargetCount = beanFactory.getBeanPostProcessorCount() + 1 + postProcessorNames.length;
 		beanFactory.addBeanPostProcessor(new BeanPostProcessorChecker(beanFactory, beanProcessorTargetCount));
 
 		// Separate between BeanPostProcessors that implement PriorityOrdered,
 		// Ordered, and the rest.
+		// 这里实际对 BeanPostProcessor 根据用户给定的优先级进行排序处理
 		List<BeanPostProcessor> priorityOrderedPostProcessors = new ArrayList<>();
 		List<BeanPostProcessor> internalPostProcessors = new ArrayList<>();
 		List<String> orderedPostProcessorNames = new ArrayList<>();
@@ -398,6 +401,7 @@ final class PostProcessorRegistrationDelegate {
 	private static void registerBeanPostProcessors(
 			ConfigurableListableBeanFactory beanFactory, List<BeanPostProcessor> postProcessors) {
 
+		// 这个 if-else 只是用于判断能不能批量丢入
 		if (beanFactory instanceof AbstractBeanFactory) {
 			// Bulk addition is more efficient against our CopyOnWriteArrayList there
 			((AbstractBeanFactory) beanFactory).addBeanPostProcessors(postProcessors);
@@ -416,6 +420,7 @@ final class PostProcessorRegistrationDelegate {
 	 * <p>在 BeanPostProcessor 实例化时，用于记录一个 bean 被实例化的的消息
 	 * <p>主要用于提醒用户相关的 BeanPostProcessor 没有准备完成，可能没来得及对新 bean 进行
 	 * 完全处理?
+	 * <p>应该主要用于防止用户在注册 BeanPostProcessor 过程中，往 BeanFactory 丢入新的 BeanPostProcessor？</p>
 	 */
 	private static final class BeanPostProcessorChecker implements BeanPostProcessor {
 
