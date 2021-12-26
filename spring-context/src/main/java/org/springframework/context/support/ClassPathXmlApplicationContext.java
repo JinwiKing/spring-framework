@@ -62,6 +62,7 @@ public class ClassPathXmlApplicationContext extends AbstractXmlApplicationContex
 	 * @see #afterPropertiesSet()
 	 */
 	public ClassPathXmlApplicationContext() {
+		super();
 	}
 
 	/**
@@ -138,7 +139,7 @@ public class ClassPathXmlApplicationContext extends AbstractXmlApplicationContex
 			String[] configLocations, boolean refresh, @Nullable ApplicationContext parent)
 			throws BeansException {
 
-		super(parent);
+		super(parent);	// << 一般 null; 父级对 parent 对处理只是添加到属性中
 		setConfigLocations(configLocations);
 		if (refresh) {
 			refresh();

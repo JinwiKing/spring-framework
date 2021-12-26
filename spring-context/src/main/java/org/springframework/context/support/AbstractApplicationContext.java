@@ -251,6 +251,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * Create a new AbstractApplicationContext with no parent.
 	 */
 	public AbstractApplicationContext() {
+		super();
 		this.resourcePatternResolver = getResourcePatternResolver();
 	}
 
@@ -492,7 +493,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @see org.springframework.core.io.support.PathMatchingResourcePatternResolver
 	 */
 	protected ResourcePatternResolver getResourcePatternResolver() {
-		return new PathMatchingResourcePatternResolver(this);
+		return new PathMatchingResourcePatternResolver(this);	// this是一个DefaultResourceLoader
 	}
 
 
@@ -753,6 +754,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		}
 
 		// Register default environment beans.
+		// !!!注册默认的Bean
 		// 默认的 bean 有：
 		// environment -> getEnvironment() @ ConfigurableEnvironment
 		// systemProperties -> getEnvironment().getSystemProperties() @ Map<String, Object>
@@ -888,8 +890,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		ConfigurableListableBeanFactory beanFactory = getBeanFactory();
 
 		// 难道 LifecycleProcessor 可以在多次 refresh 操作中生存下来？
+		// 		此处的 LifecycleProcessor 是从 BeanFactory 中获取的，LifecycleProcessor 无法在多次 refresh 中存活下来，
+		//		但是 LifecycleProcessor 是与 BeanFactory 绑定的，不需要关心 LifecycleProcessor 是否存活
 		// 检查是否有名字为 lifecycleProcessor 的 LifecycleProcessor
-		//		有点化直接获取并使用
+		//		有则直接获取并使用
 		//		否则实例化一个类型为 DefaultLifecycleProcessor 的 LifecycleProcessor
 
 		if (beanFactory.containsLocalBean(LIFECYCLE_PROCESSOR_BEAN_NAME)) {
@@ -900,7 +904,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			}
 		}else {
 			DefaultLifecycleProcessor defaultProcessor = new DefaultLifecycleProcessor();
-			defaultProcessor.setBeanFactory(beanFactory);
+			defaultProcessor.setBeanFactory(beanFactory);	// DefaultLifecycleProcessor依赖于Bean工厂获取实现了Lifecycle的Bean
 			this.lifecycleProcessor = defaultProcessor;
 			beanFactory.registerSingleton(LIFECYCLE_PROCESSOR_BEAN_NAME, this.lifecycleProcessor);
 			if (logger.isTraceEnabled()) {

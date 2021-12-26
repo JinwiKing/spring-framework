@@ -17,6 +17,8 @@
 package org.springframework.context;
 
 /**
+ * 一个定义了start/stop方法的生命周期控制的接口
+ *
  * A common interface defining methods for start/stop lifecycle control.
  * The typical use case for this is to control asynchronous processing.
  * <b>NOTE: This interface does not imply specific auto-startup semantics.

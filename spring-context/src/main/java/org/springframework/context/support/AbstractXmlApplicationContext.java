@@ -52,6 +52,7 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 	 * Create a new AbstractXmlApplicationContext with no parent.
 	 */
 	public AbstractXmlApplicationContext() {
+		super();
 	}
 
 	/**

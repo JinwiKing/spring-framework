@@ -144,6 +144,7 @@ public class DefaultLifecycleProcessor implements LifecycleProcessor, BeanFactor
 
 		lifecycleBeans.forEach((beanName, bean) -> {
 			if (!autoStartupOnly || (bean instanceof SmartLifecycle && ((SmartLifecycle) bean).isAutoStartup())) {
+				// 根据周期阶段来start相关的Bean
 				int phase = getPhase(bean);
 				phases.computeIfAbsent(
 						phase,

@@ -126,6 +126,7 @@ public interface SingletonBeanRegistry {
 	int getSingletonCount();
 
 	/**
+	 * Mutex:互斥量。应该用于外部控制注册中心能否进行注册
 	 * Return the singleton mutex used by this registry (for external collaborators).
 	 * @return the mutex object (never {@code null})
 	 * @since 4.2

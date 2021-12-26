@@ -152,6 +152,7 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 
 		// 属性决定器
 		// 默认类型为 PropertySourcesPropertyResolver
+		// 此处的 PropertyResolver 为了适配 PropertySources
 		this.propertyResolver = createPropertyResolver(propertySources);
 
 		// 自定义属性，交由子类做具体的自定义
@@ -640,7 +641,9 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 
 	@Override
 	public String resolveRequiredPlaceholders(String text) throws IllegalArgumentException {
+		// this.propertyResolver 是 PropertySourcesPropertyResolver 类型
 		// PropertySourcesPropertyResolver 是 AbstractPropertyResolver
+		// 使用
 		return this.propertyResolver.resolveRequiredPlaceholders(text);
 	}
 

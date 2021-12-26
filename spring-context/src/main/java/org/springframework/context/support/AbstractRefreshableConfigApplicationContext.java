@@ -51,6 +51,7 @@ public abstract class AbstractRefreshableConfigApplicationContext extends Abstra
 	 * Create a new AbstractRefreshableConfigApplicationContext with no parent.
 	 */
 	public AbstractRefreshableConfigApplicationContext() {
+		super();
 	}
 
 	/**
@@ -82,8 +83,7 @@ public abstract class AbstractRefreshableConfigApplicationContext extends Abstra
 			for (int i = 0; i < locations.length; i++) {
 				this.configLocations[i] = resolvePath(locations[i]).trim();
 			}
-		}
-		else {
+		}else {
 			this.configLocations = null;
 		}
 	}
