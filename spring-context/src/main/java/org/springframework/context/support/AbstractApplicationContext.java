@@ -575,6 +575,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// Allows post-processing of the bean factory in context subclasses.
 				// 模板方法，默认为空方法
 				// AnnotationConfigApplicationContext 继承链中没有重写该方法
+				// ！！！这一步可以提前往 BeanFactory 丢入 BeanPostProcessor 或则提前丢入自己初始化好的 Bean，而 AbstractApplicationContext
+				// 只能让你丢入 BeanFactoryPostProcessor。
 				postProcessBeanFactory(beanFactory);
 
 				StartupStep beanPostProcess = this.applicationStartup.start("spring.context.beans.post-process");
@@ -991,7 +993,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.freezeConfiguration();
 
 		// Instantiate all remaining (non-lazy-init) singletons.
-		// 预实例化单例的 bean
+		// 预实例化单例的 bean (只实例化没有@Lazy注解的)
 		beanFactory.preInstantiateSingletons();
 	}
 

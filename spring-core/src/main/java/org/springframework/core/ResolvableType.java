@@ -1023,6 +1023,7 @@ public class ResolvableType implements Serializable {
 	 * @see #getRawClass()
 	 */
 	public static ResolvableType forRawClass(@Nullable Class<?> clazz) {
+		// !!!具体类型也可以使用匿名方式重写方法 666啊
 		return new ResolvableType(clazz) {
 			@Override
 			public ResolvableType[] getGenerics() {

@@ -31,14 +31,24 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 
 /**
+ * 应用监听器探测器？
+ *
  * {@code BeanPostProcessor} that detects beans which implement the {@code ApplicationListener}
  * interface. This catches beans that can't reliably be detected by {@code getBeanNamesForType}
  * and related operations which only work against top-level beans.
+ * <p>这个 BeanPostProcessor 探测实现了 ApplicationListener 接口的 Bean。这捕获了不能被 getBeanNamesForType
+ * 可靠的探测的以及只工作在顶层的Bean</p>
+ * TODO 哪些是 top-level beans
  *
  * <p>With standard Java serialization, this post-processor won't get serialized as part of
  * {@code DisposableBeanAdapter} to begin with. However, with alternative serialization
  * mechanisms, {@code DisposableBeanAdapter.writeReplace} might not get used at all, so we
  * defensively mark this post-processor's field state as {@code transient}.
+ * <p>在标准的 Java 序列化的过程中，这个后置处理器不会被序列化作为 DisposableBeanAdapter 的一部分，然而。。。</p>
+ *
+ * ！！！作用：
+ * 1、将实现了 ApplicationListener 的 Bean 放入 ApplicationContext 中的事件监听列表中
+ * 2、在 Bean 被销毁时，如果该 Bean 实现了 ApplicationListener， 则从 ApplicationContext 中的事件监听列表中移除
  *
  * @author Juergen Hoeller
  * @since 4.3.4
