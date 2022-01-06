@@ -187,6 +187,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 * Create a new AbstractBeanFactory.
 	 */
 	public AbstractBeanFactory() {
+		super();	// => super no arg constructor
 	}
 
 	/**

@@ -118,6 +118,9 @@ public class RootBeanDefinition extends AbstractBeanDefinition {
 	@Nullable
 	volatile Boolean beforeInstantiationResolved;
 
+	/**
+	 * 外部管理的配置成员集合？
+	 */
 	@Nullable
 	private Set<Member> externallyManagedConfigMembers;
 
@@ -146,7 +149,7 @@ public class RootBeanDefinition extends AbstractBeanDefinition {
 	 * @see #setBeanClass
 	 */
 	public RootBeanDefinition(@Nullable Class<?> beanClass) {
-		super();
+		super();	// 初始化父类（没有特殊业务代码）
 		setBeanClass(beanClass);
 	}
 

@@ -65,7 +65,7 @@ abstract class AnnotationsScanner {
 	 * call the processor as required.
 	 * @param context an optional context object that will be passed back to the
 	 * processor
-	 * @param source the source element to scan
+	 * @param source the source element to scan（将要扫描的元素）
 	 * @param searchStrategy the search strategy to use
 	 * @param processor the processor that receives the annotations
 	 * @return the result of {@link AnnotationsProcessor#finish(Object)}
@@ -73,6 +73,7 @@ abstract class AnnotationsScanner {
 	@Nullable
 	static <C, R> R scan(C context, AnnotatedElement source, SearchStrategy searchStrategy,
 			AnnotationsProcessor<C, R> processor) {
+		// processor 的类型有 MergedAnnotationFinder
 
 		R result = process(context, source, searchStrategy, processor);
 
@@ -432,6 +433,8 @@ abstract class AnnotationsScanner {
 
 		try {
 			R result = processor.doWithAggregate(context, 0);
+
+			// 关注三目运算的最后一部分。。。
 			return (result != null ? result : processor.doWithAnnotations(
 				context, 0, source, getDeclaredAnnotations(source, false)));
 		}catch (Throwable ex) {
@@ -465,7 +468,14 @@ abstract class AnnotationsScanner {
 					Annotation annotation = annotations[i];	// 此 Annotation 是 java.ref.annotation 下的类
 					if (isIgnorable(annotation.annotationType()) ||
 							!AttributeMethods.forAnnotationType(annotation.annotationType()).isValid(annotation)) {
-						annotations[i] = null;
+
+						// 如果可以注解可以被忽略（注解位于 java.lang 或 org.springframework.lang 包下）
+						// 或者
+						// 注解是不合法的
+						// 则
+						// 过滤掉该注解
+
+						annotations[i] = null;	// 这个目的是为了解除引用，让垃圾收集器收集不使用的注解？
 					}else {
 						allIgnored = false;
 					}
@@ -477,10 +487,12 @@ abstract class AnnotationsScanner {
 				}
 			}
 		}
+
+		// defensive: 防御的，戒备的
 		if (!defensive || annotations.length == 0 || !cached) {
 			return annotations;
 		}
-		return annotations.clone();
+		return annotations.clone();	// 细节拷贝
 	}
 
 	private static boolean isIgnorable(Class<?> annotationType) {

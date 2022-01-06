@@ -140,6 +140,8 @@ public final class SpringFactoriesLoader {
 
 		result = new HashMap<>();
 		try {
+			// TODO: 读取 META-INF/spring.factories
+			// beans包 ExtendedBeanInfoFactory
 			Enumeration<URL> urls = classLoader.getResources(FACTORIES_RESOURCE_LOCATION);
 			while (urls.hasMoreElements()) {
 				URL url = urls.nextElement();
@@ -148,7 +150,7 @@ public final class SpringFactoriesLoader {
 				for (Map.Entry<?, ?> entry : properties.entrySet()) {
 					String factoryTypeName = ((String) entry.getKey()).trim();
 					String[] factoryImplementationNames =
-							StringUtils.commaDelimitedListToStringArray((String) entry.getValue());
+							StringUtils.commaDelimitedListToStringArray((String) entry.getValue());	// 按逗号分割
 					for (String factoryImplementationName : factoryImplementationNames) {
 						result.computeIfAbsent(factoryTypeName, key -> new ArrayList<>())
 								.add(factoryImplementationName.trim());
@@ -160,8 +162,7 @@ public final class SpringFactoriesLoader {
 			result.replaceAll((factoryType, implementations) -> implementations.stream().distinct()
 					.collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList)));
 			cache.put(classLoader, result);
-		}
-		catch (IOException ex) {
+		}catch (IOException ex) {
 			throw new IllegalArgumentException("Unable to load factories from location [" +
 					FACTORIES_RESOURCE_LOCATION + "]", ex);
 		}

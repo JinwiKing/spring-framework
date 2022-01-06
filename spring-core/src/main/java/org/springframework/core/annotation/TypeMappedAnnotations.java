@@ -59,6 +59,9 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 
 	private final RepeatableContainers repeatableContainers;
 
+	/**
+	 * 注解过滤器。（过滤器性质是黑名单性质，满足过滤器的条件，则过滤掉）
+	 */
 	private final AnnotationFilter annotationFilter;
 
 	@Nullable
@@ -67,6 +70,11 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 
 	private TypeMappedAnnotations(AnnotatedElement element, SearchStrategy searchStrategy,
 			RepeatableContainers repeatableContainers, AnnotationFilter annotationFilter) {
+
+		// 一般默认值：
+		// 	searchStrategy => SearchStrategy.DIRECT
+		// 	repeatableContainers => RepeatableContainers.standardRepeatables()
+		// 	annotationFilter => AnnotationFilter.PLAIN
 
 		this.source = element;
 		this.element = element;
@@ -142,6 +150,7 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 			@Nullable MergedAnnotationSelector<A> selector) {
 
 		if (this.annotationFilter.matches(annotationType)) {
+			// 如果筛选器匹配了给定的注解，则 missing
 			return MergedAnnotation.missing();
 		}
 		MergedAnnotation<A> result = scan(annotationType,
@@ -172,7 +181,7 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 
 		// MergedAnnotationFinder 泛型的返回类型为 MergedAnnotation<A>
 		MergedAnnotation<A> result = scan(annotationType, new MergedAnnotationFinder<>(annotationType, predicate, selector));
-		return (result != null ? result : MergedAnnotation.missing());
+		return (result != null ? result : MergedAnnotation.missing());	// 如果结果为空，则返回一个特例
 	}
 
 	@Override
@@ -233,11 +242,15 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 
 	@Nullable
 	private <C, ReturnType> ReturnType scan(C criteria, AnnotationsProcessor<C, ReturnType> processor) {
+		// processor 的类型有 MergedAnnotationFinder
+
+		// annotations 是由外部传入才有可能不为 null
 		if (this.annotations != null) {
 			// MergedAnnotationFinder 只有当 this.annotations 不为 null 才不会返回 null
 			ReturnType result = processor.doWithAnnotations(criteria, 0, this.source, this.annotations);
 			return processor.finish(result);
 		}
+
 		if (this.element != null && this.searchStrategy != null) {
 			// 一般来说 this.element 和 this.searchStrategy 都不等于 null
 			return AnnotationsScanner.scan(criteria, this.element, this.searchStrategy, processor);
@@ -270,6 +283,8 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 			AnnotationFilter annotationFilter, @Nullable Object requiredType) {
 
 		Class<? extends Annotation> actualType = mapping.getAnnotationType();
+
+		// actualType.getName().equals(requiredType)) 指的是不同类加载器加载出来的？
 		return (!annotationFilter.matches(actualType) &&
 				(requiredType == null || actualType == requiredType || actualType.getName().equals(requiredType)));
 	}
@@ -417,19 +432,28 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 		private MergedAnnotation<A> process(
 				Object type, int aggregateIndex, @Nullable Object source, Annotation annotation) {
 
-			// repeatableContainers 一般默认为 NoRepeatableContainer
+			// repeatableContainers 的实现有：
+			// 	NoRepeatableContainer
+			//	StandardRepeatableContainers
 			Annotation[] repeatedAnnotations = repeatableContainers.findRepeatedAnnotations(annotation);
 			if (repeatedAnnotations != null) {
 				return doWithAnnotations(type, aggregateIndex, source, repeatedAnnotations);
 			}
+
+			// annotationFilter 的实现有：
+			// 	PackagesAnnotationFilter PLAIN => "java.lang", "org.springframework.lang"
 			AnnotationTypeMappings mappings = AnnotationTypeMappings.forAnnotationType(
-					annotation.annotationType(), repeatableContainers, annotationFilter);
+					annotation.annotationType(), repeatableContainers, annotationFilter);	// <= AnnotationTypeMappings
 			for (int i = 0; i < mappings.size(); i++) {
+				// 从所有 AnnotationTypeMappings 中挑选出一个映射
 				AnnotationTypeMapping mapping = mappings.get(i);
 				if (isMappingForType(mapping, annotationFilter, this.requiredType)) {
 					MergedAnnotation<A> candidate = TypeMappedAnnotation.createIfPossible(
-							mapping, source, annotation, aggregateIndex, IntrospectionFailureLogger.INFO);
+							mapping, source, annotation, aggregateIndex, IntrospectionFailureLogger.INFO);	// <= TypeMergedAnnotation
 					if (candidate != null && (this.predicate == null || this.predicate.test(candidate))) {
+
+						// selector 实现有
+						//		Nearest
 						if (this.selector.isBestCandidate(candidate)) {
 							return candidate;
 						}

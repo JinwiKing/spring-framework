@@ -321,8 +321,7 @@ public abstract class ReflectionUtils {
 		for (Method method : methods) {
 			try {
 				mc.doWith(method);
-			}
-			catch (IllegalAccessException ex) {
+			}catch (IllegalAccessException ex) {
 				throw new IllegalStateException("Not allowed to access method '" + method.getName() + "': " + ex);
 			}
 		}
@@ -343,6 +342,9 @@ public abstract class ReflectionUtils {
 	}
 
 	/**
+	 * 对给定类（或接口）下以及给定类的父类（父接口）下所有匹配的方法执行给定的回调操作。
+	 * <br>
+	 *
 	 * Perform the given callback operation on all matching methods of the given
 	 * class and superclasses (or given interface and super-interfaces).
 	 * <p>The same named method occurring on subclass and superclass will appear
@@ -361,15 +363,13 @@ public abstract class ReflectionUtils {
 			}
 			try {
 				mc.doWith(method);
-			}
-			catch (IllegalAccessException ex) {
+			}catch (IllegalAccessException ex) {
 				throw new IllegalStateException("Not allowed to access method '" + method.getName() + "': " + ex);
 			}
 		}
 		if (clazz.getSuperclass() != null && (mf != USER_DECLARED_METHODS || clazz.getSuperclass() != Object.class)) {
 			doWithMethods(clazz.getSuperclass(), mc, mf);
-		}
-		else if (clazz.isInterface()) {
+		}else if (clazz.isInterface()) {
 			for (Class<?> superIfc : clazz.getInterfaces()) {
 				doWithMethods(superIfc, mc, mf);
 			}
@@ -462,6 +462,9 @@ public abstract class ReflectionUtils {
 				Method[] declaredMethods = clazz.getDeclaredMethods();
 				List<Method> defaultMethods = findConcreteMethodsOnInterfaces(clazz);
 				if (defaultMethods != null) {
+					// TODO: 疑似bug
+					// findConcreteMethodsOnInterfaces 返回有 default 修饰的方法，如果具体类重写了带有 default 修饰的方
+					// 法，那么方法列表可能存在重复的方法
 					result = new Method[declaredMethods.length + defaultMethods.size()];
 					System.arraycopy(declaredMethods, 0, result, 0, declaredMethods.length);
 					int index = declaredMethods.length;
@@ -479,12 +482,13 @@ public abstract class ReflectionUtils {
 						"] from ClassLoader [" + clazz.getClassLoader() + "]", ex);
 			}
 		}
-		// 由于 declaredMethodsCache 使用了 EMPTY_METHOD_ARRAY，所以返回的时候要考虑克隆一个新引用出来
+		// 方法数组的长度和 defensive 确定是否需要返回方法数组的拷贝
 		return (result.length == 0 || !defensive) ? result : result.clone();
 	}
 
 	@Nullable
 	private static List<Method> findConcreteMethodsOnInterfaces(Class<?> clazz) {
+		// 获取有 default 修饰的方法？
 		List<Method> result = null;
 		for (Class<?> ifc : clazz.getInterfaces()) {
 			for (Method ifcMethod : ifc.getMethods()) {
@@ -670,8 +674,7 @@ public abstract class ReflectionUtils {
 		for (Field field : getDeclaredFields(clazz)) {
 			try {
 				fc.doWith(field);
-			}
-			catch (IllegalAccessException ex) {
+			}catch (IllegalAccessException ex) {
 				throw new IllegalStateException("Not allowed to access field '" + field.getName() + "': " + ex);
 			}
 		}
@@ -727,13 +730,14 @@ public abstract class ReflectionUtils {
 	 */
 	private static Field[] getDeclaredFields(Class<?> clazz) {
 		Assert.notNull(clazz, "Class must not be null");
+
+		// declaredFieldsCache => ConcurrentReferenceHashMap
 		Field[] result = declaredFieldsCache.get(clazz);
 		if (result == null) {
 			try {
-				result = clazz.getDeclaredFields();
+				result = clazz.getDeclaredFields();	// 只获取这个类型下或这个类型接口下的属性（包括私有属性），没有获取父类的属性
 				declaredFieldsCache.put(clazz, (result.length == 0 ? EMPTY_FIELD_ARRAY : result));
-			}
-			catch (Throwable ex) {
+			}catch (Throwable ex) {
 				throw new IllegalStateException("Failed to introspect Class [" + clazz.getName() +
 						"] from ClassLoader [" + clazz.getClassLoader() + "]", ex);
 			}

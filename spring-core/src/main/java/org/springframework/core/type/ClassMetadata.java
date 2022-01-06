@@ -55,6 +55,9 @@ public interface ClassMetadata {
 	boolean isAbstract();
 
 	/**
+	 * 确定当前的类是一个具体类型。也就是既不是一个接口也不是一个抽象类
+	 * <br>
+	 *
 	 * Return whether the underlying class represents a concrete class,
 	 * i.e. neither an interface nor an abstract class.
 	 */
@@ -68,6 +71,12 @@ public interface ClassMetadata {
 	boolean isFinal();
 
 	/**
+	 * underlying: 当前的?
+	 * <br>
+	 * 检查是否当前类是独立的。例如是否是一个顶层类型或内嵌（静态内部类）类型，它可以被独立从封闭类构造出来。
+	 * （封闭类：不能被继承的类）
+	 * <br>
+	 *
 	 * Determine whether the underlying class is independent, i.e. whether
 	 * it is a top-level class or a nested class (static inner class) that
 	 * can be constructed independently from an enclosing class.

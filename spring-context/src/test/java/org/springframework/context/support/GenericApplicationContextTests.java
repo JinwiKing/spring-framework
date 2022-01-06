@@ -23,7 +23,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.metrics.jfr.FlightRecorderApplicationStartup;
+//import org.springframework.core.metrics.jfr.FlightRecorderApplicationStartup;
 import org.springframework.util.ObjectUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -202,13 +202,13 @@ public class GenericApplicationContextTests {
 		assertThat(context.getBeansOfType(BeanC.class).values().iterator().next()).isSameAs(context.getBean(BeanC.class));
 	}
 
-	@Test
-	void configureApplicationStartupOnBeanFactory() {
-		FlightRecorderApplicationStartup applicationStartup = new FlightRecorderApplicationStartup();
-		GenericApplicationContext context = new GenericApplicationContext();
-		context.setApplicationStartup(applicationStartup);
-		assertThat(context.getBeanFactory().getApplicationStartup()).isEqualTo(applicationStartup);
-	}
+//	@Test
+//	void configureApplicationStartupOnBeanFactory() {
+//		FlightRecorderApplicationStartup applicationStartup = new FlightRecorderApplicationStartup();
+//		GenericApplicationContext context = new GenericApplicationContext();
+//		context.setApplicationStartup(applicationStartup);
+//		assertThat(context.getBeanFactory().getApplicationStartup()).isEqualTo(applicationStartup);
+//	}
 
 
 	static class BeanA {

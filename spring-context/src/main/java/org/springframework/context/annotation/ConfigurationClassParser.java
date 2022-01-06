@@ -311,7 +311,7 @@ class ConfigurationClassParser {
 			ConfigurationClass configClass, SourceClass sourceClass, Predicate<String> filter)
 			throws IOException {
 
-		// 判断配置类是否带有 @Component 注解
+		// 判断配置类是否带有 @Component 注解（只需要检查 @Component 即可，因为 @Configuration 注解上也注解了 @Component）
 		if (configClass.getMetadata().isAnnotated(Component.class.getName())) {
 			// Recursively process any member (nested) classes first
 			processMemberClasses(configClass, sourceClass, filter);
@@ -338,6 +338,8 @@ class ConfigurationClassParser {
 				sourceClass.getMetadata(), ComponentScans.class, ComponentScan.class);
 		if (!componentScans.isEmpty() &&
 				!this.conditionEvaluator.shouldSkip(sourceClass.getMetadata(), ConfigurationPhase.REGISTER_BEAN)) {
+			// 如果待扫描的主键列表不为空以及满足 @Conditional，则扫描
+
 			for (AnnotationAttributes componentScan : componentScans) {
 				// The config class is annotated with @ComponentScan -> perform the scan immediately
 				Set<BeanDefinitionHolder> scannedBeanDefinitions =
@@ -405,6 +407,7 @@ class ConfigurationClassParser {
 	private void processMemberClasses(ConfigurationClass configClass, SourceClass sourceClass,
 			Predicate<String> filter) throws IOException {
 
+		// 获取成员类
 		Collection<SourceClass> memberClasses = sourceClass.getMemberClasses();
 		if (!memberClasses.isEmpty()) {
 			List<SourceClass> candidates = new ArrayList<>(memberClasses.size());
@@ -627,6 +630,7 @@ class ConfigurationClassParser {
 
 		// 这里有循环依赖检测？
 		if (checkForCircularImports && isChainedImportOnStack(configClass)) {
+			// TODO: @Import 循环引用检查？
 			this.problemReporter.error(new CircularImportProblem(configClass, this.importStack));
 		}else {
 			// importStack 用于导入的配置文件中是否存读取循环
@@ -689,7 +693,7 @@ class ConfigurationClassParser {
 			AnnotationMetadata importingClass = this.importStack.getImportingClassFor(configClassName);
 			// 这里检查配置是否存在于 importStack 中
 			while (importingClass != null) {
-				// 根据的是配置类的雷曼是否存在于 importStack 中的配置类类名
+				// 根据的是配置类的类名是否存在于 importStack 中的配置类类名
 				if (configClassName.equals(importingClass.getClassName())) {
 					return true;
 				}

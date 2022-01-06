@@ -79,6 +79,9 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 		super();	// beanFactory = new DefaultListableBeanFactory();
 
 		StartupStep createAnnotatedBeanDefReader = this.getApplicationStartup().start("spring.context.annotated-bean-reader.create");
+
+		// 这一步有核心处理器注册到 BeanDefinitionRegister 中
+		// new AnnotatedBeanDefinitionReader 的时候会有一些 Processor 注册到 BeanDefinitionRegister 中
 		this.reader = new AnnotatedBeanDefinitionReader(this);	// AnnotatedBeanDefinitionReader 没有实现接口以及继承除了Object外的类
 		createAnnotatedBeanDefReader.end();
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
@@ -101,7 +104,9 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * {@link Configuration @Configuration} classes
 	 */
 	public AnnotationConfigApplicationContext(Class<?>... componentClasses) {
-		this();
+		this();	// 主要是初始化 reader 和 scanner
+
+		// register 注册的类型不需要实现 @Configuration 也可以
 		register(componentClasses);
 		refresh();
 	}
@@ -195,6 +200,8 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 		Assert.notEmpty(basePackages, "At least one base package must be specified");
 		StartupStep scanPackages = this.getApplicationStartup().start("spring.context.base-packages.scan")
 				.tag("packages", () -> Arrays.toString(basePackages));
+
+		// scanner => ClassPathBeanDefinitionScanner
 		this.scanner.scan(basePackages);
 		scanPackages.end();
 	}

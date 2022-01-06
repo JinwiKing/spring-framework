@@ -332,7 +332,7 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
 	static MergedAnnotations from(AnnotatedElement element, SearchStrategy searchStrategy,
 			RepeatableContainers repeatableContainers) {
 
-		// AnnotationFilter.PLAIN 将过滤 "java.lang" 包和 "org.springframework.lang" 包下的所有类
+		// AnnotationFilter.PLAIN 将过滤 "java.lang" 包和 "org.springframework.lang" 包下的所有类，因为该包下的类没有读取的必要？
 		return from(element, searchStrategy, repeatableContainers, AnnotationFilter.PLAIN);
 	}
 
@@ -352,8 +352,14 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
 	static MergedAnnotations from(AnnotatedElement element, SearchStrategy searchStrategy,
 			RepeatableContainers repeatableContainers, AnnotationFilter annotationFilter) {
 
+		// 自引用调用参数默认值：
+		// 	searchStrategy => SearchStrategy.DIRECT
+		// 	repeatableContainers => RepeatableContainers.standardRepeatables()
+		// 	annotationFilter => AnnotationFilter.PLAIN
+
 		Assert.notNull(repeatableContainers, "RepeatableContainers must not be null");
 		Assert.notNull(annotationFilter, "AnnotationFilter must not be null");
+
 		return TypeMappedAnnotations.from(element, searchStrategy, repeatableContainers, annotationFilter);
 	}
 

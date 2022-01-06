@@ -96,6 +96,14 @@ public class AnnotatedBeanDefinitionReader {
 		Assert.notNull(environment, "Environment must not be null");
 		this.registry = registry;
 		this.conditionEvaluator = new ConditionEvaluator(registry, environment, null);
+
+		// 这一步将注册一些核心的处理器
+		// ConfigurationClassPostProcessor BeanDefinitionRegistryPostProcessor, BeanFactoryPostProcessor
+		// AutowiredAnnotationBeanPostProcessor SmartInstantiationAwareBeanPostProcessor, MergedBeanDefinitionPostProcessor, AutowiredAnnotationBeanPostProcessor, BeanPostProcessor
+		// CommonAnnotationBeanPostProcessor MergedBeanDefinitionPostProcessor, MergedBeanDefinitionPostProcessor, MergedBeanDefinitionPostProcessor, BeanPostProcessor
+		// PersistenceAnnotationBeanPostProcessor PersistenceAnnotationBeanPostProcessor, MergedBeanDefinitionPostProcessor, MergedBeanDefinitionPostProcessor, MergedBeanDefinitionPostProcessor
+		// EventListenerMethodProcessor BeanFactoryPostProcessor
+		// DefaultEventListenerFactory EventListenerFactory
 		AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry);
 	}
 
@@ -274,12 +282,16 @@ public class AnnotatedBeanDefinitionReader {
 		}
 
 		abd.setInstanceSupplier(supplier);
+		// scopeMetadataResolver => AnnotationScopeMetadataResolver
 		ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(abd);
 		abd.setScope(scopeMetadata.getScopeName());
+		// 如果没有指定名字，则生成一个名字
+		// beanNameGenerator => AnnotationBeanNameGenerator
 		String beanName = (name != null ? name : this.beanNameGenerator.generateBeanName(abd, this.registry));
 
-		AnnotationConfigUtils.processCommonDefinitionAnnotations(abd);
+		AnnotationConfigUtils.processCommonDefinitionAnnotations(abd);	// 处理通用的定义注解
 		if (qualifiers != null) {
+			// qualifiers => 限定词
 			for (Class<? extends Annotation> qualifier : qualifiers) {
 				if (Primary.class == qualifier) {
 					abd.setPrimary(true);
@@ -290,6 +302,8 @@ public class AnnotatedBeanDefinitionReader {
 				}
 			}
 		}
+
+		// 定制化 BeanDefinition
 		if (customizers != null) {
 			// 自定义 bean 的定义
 			for (BeanDefinitionCustomizer customizer : customizers) {

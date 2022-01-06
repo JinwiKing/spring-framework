@@ -42,8 +42,14 @@ public abstract class AbstractTypeHierarchyTraversingFilter implements TypeFilte
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
+	/**
+	 * 是否考虑继承的关系
+	 */
 	private final boolean considerInherited;
 
+	/**
+	 * 是否考虑接口关系
+	 */
 	private final boolean considerInterfaces;
 
 
@@ -64,7 +70,7 @@ public abstract class AbstractTypeHierarchyTraversingFilter implements TypeFilte
 		if (matchSelf(metadataReader)) {
 			return true;
 		}
-		ClassMetadata metadata = metadataReader.getClassMetadata();
+		ClassMetadata metadata = metadataReader.getClassMetadata();	// <= SimpleAnnotationMetadata
 		if (matchClassName(metadata.getClassName())) {
 			return true;
 		}

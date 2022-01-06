@@ -71,11 +71,15 @@ final class AnnotationTypeMappings {
 
 
 	private void addAllMappings(Class<? extends Annotation> annotationType) {
+		// 将当前注解以及当前注解上的注解加入到当前映射中
+
 		Deque<AnnotationTypeMapping> queue = new ArrayDeque<>();
 		addIfPossible(queue, null, annotationType, null);
 		while (!queue.isEmpty()) {
 			AnnotationTypeMapping mapping = queue.removeFirst();
 			this.mappings.add(mapping);
+
+			// 提取注解下的注解
 			addMetaAnnotationsToQueue(queue, mapping);
 		}
 	}

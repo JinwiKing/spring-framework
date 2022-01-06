@@ -59,7 +59,7 @@ final class SimpleMetadataReader implements MetadataReader {
 		this.resource = resource;
 
 		// 一般返回 SimpleAnnotationMetadata 类型的 AnnotationMetadata
-		this.annotationMetadata = visitor.getMetadata();
+		this.annotationMetadata = visitor.getMetadata();	// <= SimpleAnnotationMetadata
 	}
 
 	private static ClassReader getClassReader(Resource resource) throws IOException {

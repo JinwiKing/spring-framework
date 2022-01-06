@@ -65,7 +65,10 @@ final class AttributeMethods {
 	private AttributeMethods(@Nullable Class<? extends Annotation> annotationType, Method[] attributeMethods) {
 		this.annotationType = annotationType;
 		this.attributeMethods = attributeMethods;
-		this.canThrowTypeNotPresentException = new boolean[attributeMethods.length];	// 可以触发抛出类型没找到异常？
+
+		// 提前标记会抛出类型不存在异常的方法
+		this.canThrowTypeNotPresentException = new boolean[attributeMethods.length];
+
 		boolean foundDefaultValueMethod = false;
 		boolean foundNestedAnnotation = false;
 		for (int i = 0; i < attributeMethods.length; i++) {
@@ -86,6 +89,9 @@ final class AttributeMethods {
 
 
 	/**
+	 * 检查确定这个实例是不是只包含一个叫 value 的名称的属性（应该是注解里面叫 value 的方法？）
+	 * <br>
+	 *
 	 * Determine if this instance only contains a single attribute named
 	 * {@code value}.
 	 * @return {@code true} if there is only a value attribute
@@ -97,6 +103,9 @@ final class AttributeMethods {
 
 
 	/**
+	 * 检查确定给定的注解能够成功的调用注解的方法并成功返回
+	 * <br>
+	 *
 	 * Determine if values from the given annotation can be safely accessed without
 	 * causing any {@link TypeNotPresentException TypeNotPresentExceptions}.
 	 * @param annotation the annotation to check
@@ -105,8 +114,10 @@ final class AttributeMethods {
 	 */
 	boolean isValid(Annotation annotation) {
 		assertAnnotation(annotation);
+
+		// 将所有会抛出类型不存在异常的注解都预调用一遍
+		// 如果预调用出错，则认为是无效的
 		for (int i = 0; i < size(); i++) {
-			// 将注解内的所有方法都调用一遍
 			if (canThrowTypeNotPresentException(i)) {
 				try {
 					get(i).invoke(annotation);
@@ -255,6 +266,13 @@ final class AttributeMethods {
 
 	private static AttributeMethods compute(Class<? extends Annotation> annotationType) {
 		Method[] methods = annotationType.getDeclaredMethods();	// 这里获取注解内的所有方法
+		// 注解类型 getMethods 会返回：
+		// 	注解里面包括的方法
+		// 	public abstract boolean java.lang.annotation.Annotation.equals(java.lang.Object)
+		//	public abstract java.lang.String java.lang.annotation.Annotation.toString()
+		//	public abstract int java.lang.annotation.Annotation.hashCode()
+		//	public abstract java.lang.Class java.lang.annotation.Annotation.annotationType()
+
 		int size = methods.length;
 		for (int i = 0; i < methods.length; i++) {
 			if (!isAttributeMethod(methods[i])) {
@@ -265,8 +283,14 @@ final class AttributeMethods {
 		if (size == 0) {
 			return NONE;
 		}
+
+		// methodComparator 会将元素为 null 的往后面移
+		// 然后拷贝就会只拷贝不为 null 的区间
+		// TODO: 学习
+		// 过滤数组中为 null 元素的方式值得学习
 		Arrays.sort(methods, methodComparator);
 		Method[] attributeMethods = Arrays.copyOf(methods, size);
+
 		return new AttributeMethods(annotationType, attributeMethods);
 	}
 

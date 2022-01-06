@@ -101,7 +101,7 @@ final class PostProcessorRegistrationDelegate {
 
 			// 注意：BeanDefinitionRegistryPostProcessor 继承了 BeanFactoryPostProcessor 接口
 
-			// 一下流程会先对 BeanDefinitionRegistryPostProcessor 的方法 postProcessBeanDefinitionRegistry 进行调用
+			// 以下流程会先对 BeanDefinitionRegistryPostProcessor 的方法 postProcessBeanDefinitionRegistry 进行调用
 			// 然后再对 BeanFactoryPostProcessor 的方法 postProcessBeanFactory 进行调用
 
 			for (BeanFactoryPostProcessor postProcessor : beanFactoryPostProcessors) {
@@ -142,7 +142,7 @@ final class PostProcessorRegistrationDelegate {
 				// 是否需要提前运行
 				if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
 					// 注意！！！
-					// 实现了 PriorityOrdered 接口的 BeanDefinitionRegistryPostProcessor 先进行实例化
+					// 实现了 PriorityOrdered 接口的 BeanDefinitionRegistryPostProcessor 先进行实例化，并且进行注入
 					currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
 
 					processedBeans.add(ppName);
@@ -260,9 +260,14 @@ final class PostProcessorRegistrationDelegate {
 
 	/**
 	 * 注册 Bean 后处理器
+	 *
+	 * 主要流程：
+	 * 1、将 BeanFactory 中的 BeanPostProcessor 类型 Bean 提取出来，注册到 BeanFactory 中的 BeanPostProcessor 列表中
 	 */
 	public static void registerBeanPostProcessors(
 			ConfigurableListableBeanFactory beanFactory, AbstractApplicationContext applicationContext) {
+
+		// 在丢入 BeanFactory 中的 BeanPostProcessor 列表的过程中，会做优先级判断
 
 		// WARNING: Although it may appear that the body of this method can be easily
 		// refactored to avoid the use of multiple loops and multiple lists, the use
@@ -347,6 +352,7 @@ final class PostProcessorRegistrationDelegate {
 
 		// Re-register post-processor for detecting inner beans as ApplicationListeners,
 		// moving it to the end of the processor chain (for picking up proxies etc).
+		// 此举是将 ApplicationListenerDetector 丢到 BeanPostProcessor 列表的最末端。（该方法在接口没有明确定义行为实现）
 		beanFactory.addBeanPostProcessor(new ApplicationListenerDetector(applicationContext));
 	}
 

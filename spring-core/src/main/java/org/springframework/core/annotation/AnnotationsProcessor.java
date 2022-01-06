@@ -49,7 +49,7 @@ interface AnnotationsProcessor<C, R> {
 	 * Called when an array of annotations can be processed. This method may
 	 * return a {@code non-null} result to short-circuit any further processing.
 	 * @param context the context information relevant to the processor
-	 * @param aggregateIndex the aggregate index of the provided annotations
+	 * @param aggregateIndex the aggregate index of the provided annotations（聚合索引？）
 	 * @param source the original source of the annotations, if known
 	 * @param annotations the annotations to process (this array may contain
 	 * {@code null} elements)

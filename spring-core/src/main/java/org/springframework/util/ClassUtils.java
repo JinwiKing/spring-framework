@@ -944,12 +944,16 @@ public abstract class ClassUtils {
 	 */
 	public static String getShortName(String className) {
 		Assert.hasLength(className, "Class name must not be empty");
+
+		// 获取类名
 		int lastDotIndex = className.lastIndexOf(PACKAGE_SEPARATOR);
 		int nameEndIndex = className.indexOf(CGLIB_CLASS_SEPARATOR);
 		if (nameEndIndex == -1) {
 			nameEndIndex = className.length();
 		}
 		String shortName = className.substring(lastDotIndex + 1, nameEndIndex);
+
+		// 内部类的处理
 		shortName = shortName.replace(NESTED_CLASS_SEPARATOR, PACKAGE_SEPARATOR);
 		return shortName;
 	}

@@ -95,12 +95,15 @@ public class InjectionMetadata {
 	 * @since 5.2.4
 	 */
 	protected boolean needsRefresh(Class<?> clazz) {
+		// 检查该对象的注入目标类型是否和给定的类型是同一个
 		return this.targetClass != clazz;
 	}
 
 	public void checkConfigMembers(RootBeanDefinition beanDefinition) {
 		Set<InjectedElement> checkedElements = new LinkedHashSet<>(this.injectedElements.size());
 		for (InjectedElement element : this.injectedElements) {
+			// Member 可以是一个属性或一个方法或者一个构造方法
+			// 属性、方法和构造方法都实现了 Member 接口
 			Member member = element.getMember();
 			if (!beanDefinition.isExternallyManagedConfigMember(member)) {
 				beanDefinition.registerExternallyManagedConfigMember(member);
@@ -126,7 +129,7 @@ public class InjectionMetadata {
 	 * @since 3.2.13
 	 */
 	public void clear(@Nullable PropertyValues pvs) {
-		Collection<InjectedElement> checkedElements = this.checkedElements;
+		Collection<InjectedElement> checkedElements = this.checkedElements;	// 这是为了避免并发带来的影响？
 		Collection<InjectedElement> elementsToIterate =
 				(checkedElements != null ? checkedElements : this.injectedElements);
 		if (!elementsToIterate.isEmpty()) {
@@ -146,7 +149,7 @@ public class InjectionMetadata {
 	 */
 	public static InjectionMetadata forElements(Collection<InjectedElement> elements, Class<?> clazz) {
 		return (elements.isEmpty() ? new InjectionMetadata(clazz, Collections.emptyList()) :
-				new InjectionMetadata(clazz, elements));
+				new InjectionMetadata(clazz, elements));	// 都是简单构造方法
 	}
 
 	/**

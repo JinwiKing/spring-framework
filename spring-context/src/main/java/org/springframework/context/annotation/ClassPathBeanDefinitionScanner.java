@@ -138,6 +138,8 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	public ClassPathBeanDefinitionScanner(BeanDefinitionRegistry registry, boolean useDefaultFilters,
 			Environment environment) {
 
+		// AnnotationConfigApplicationContext 继承了 DefaultResourceLoader
+
 		this(registry, useDefaultFilters, environment,
 				(registry instanceof ResourceLoader ? (ResourceLoader) registry : null));
 	}
@@ -253,18 +255,29 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	/**
 	 * Perform a scan within the specified base packages.
 	 * @param basePackages the packages to check for annotated classes
-	 * @return number of beans registered
+	 * @return number of beans registered（返回注册 bean 的个数）
 	 */
 	public int scan(String... basePackages) {
 		int beanCountAtScanStart = this.registry.getBeanDefinitionCount();
 
+		// 这里开始扫描，并将扫描到到 bean 注册到 register 中
 		doScan(basePackages);
 
 		// Register annotation config processors, if necessary.
+		// includeAnnotationConfig 默认为 true
 		if (this.includeAnnotationConfig) {
+			// 核心
+			// 这里也注册 AnnotatedBeanDefinitionReader 构造方法里面默认注册的注解处理器
+			// ConfigurationClassPostProcessor BeanDefinitionRegistryPostProcessor, BeanFactoryPostProcessor
+			// AutowiredAnnotationBeanPostProcessor SmartInstantiationAwareBeanPostProcessor, MergedBeanDefinitionPostProcessor, AutowiredAnnotationBeanPostProcessor, BeanPostProcessor
+			// CommonAnnotationBeanPostProcessor MergedBeanDefinitionPostProcessor, MergedBeanDefinitionPostProcessor, MergedBeanDefinitionPostProcessor, BeanPostProcessor
+			// PersistenceAnnotationBeanPostProcessor PersistenceAnnotationBeanPostProcessor, MergedBeanDefinitionPostProcessor, MergedBeanDefinitionPostProcessor, MergedBeanDefinitionPostProcessor
+			// EventListenerMethodProcessor BeanFactoryPostProcessor
+			// DefaultEventListenerFactory EventListenerFactory
 			AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry);
 		}
 
+		// 返回注册的个数
 		return (this.registry.getBeanDefinitionCount() - beanCountAtScanStart);
 	}
 
@@ -285,7 +298,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 			// 返回的 BeanDefinition 类型为 ScannedGenericBeanDefinition
 			// ScannedGenericBeanDefinition 是 AnnotatedBeanDefinition
 			// ScannedGenericBeanDefinition 也实现了 AnnotatedBeanDefinition
-			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
+			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);	// => super下的方法
 			for (BeanDefinition candidate : candidates) {
 				ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);
 				candidate.setScope(scopeMetadata.getScopeName());

@@ -132,6 +132,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	 * @since 4.3.6
 	 */
 	protected ClassPathScanningCandidateComponentProvider() {
+		super();	// => Object
 	}
 
 	/**
@@ -217,6 +218,9 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	 */
 	@SuppressWarnings("unchecked")
 	protected void registerDefaultFilters() {
+		// TODO: 注册默认注解筛选器
+		// 这里将需要扫描识别的注解放入 includeFilters 中
+
 		// 这里只设置了 @Component 是因为 @Configuration 的注解上带有了 @Component 注解
 		// 当进行过滤时，会同时扫描注解上的注解（套娃）
 		this.includeFilters.add(new AnnotationTypeFilter(Component.class));
@@ -278,13 +282,15 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 
 		// 分析时传入的 ResourceLoader 为 DefaultResourceLoader 类型
 
-		// 这一步封装 ResourceLoader 到 PathMatchingResourcePatternResolver 类型
+		// DefaultResourceLoader 的情况下 resourcePatternResolver 的类型为 PathMatchingResourcePatternResolver
 		this.resourcePatternResolver = ResourcePatternUtils.getResourcePatternResolver(resourceLoader);
 
 		this.metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);
 
 
-		this.componentsIndex = CandidateComponentsIndexLoader.loadIndex(this.resourcePatternResolver.getClassLoader());	// 转发给 DefaultResourceLoader
+		// PathMatchingResourcePatternResolver 转发给 DefaultResourceLoader 的 getClassLoader
+		// componentsIndex 一般为 null?
+		this.componentsIndex = CandidateComponentsIndexLoader.loadIndex(this.resourcePatternResolver.getClassLoader());
 	}
 
 	/**
@@ -438,7 +444,6 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 		try {
 			String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
 					resolveBasePackage(basePackage) + '/' + this.resourcePattern;
-			// 此处 Resource 类型应该是 UrlResource
 			Resource[] resources = getResourcePatternResolver().getResources(packageSearchPath);
 			boolean traceEnabled = logger.isTraceEnabled();
 			boolean debugEnabled = logger.isDebugEnabled();
@@ -448,7 +453,9 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 				}
 				if (resource.isReadable()) {
 					try {
-						MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
+						// getMetadataReaderFactory() 一般返回类型为 CachingMetadataReaderFactory，继承了 CachingMetadataReaderFactory
+						// MetadataReader 实际从字节码中读取注解，提供封装接口，方便访问
+						MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);	// <= SimpleMetadataReader
 						// isCandidateComponent 方法将判断类文件是否有 Spring 相关的注解
 						if (isCandidateComponent(metadataReader)) {
 							ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition(metadataReader);
@@ -509,6 +516,9 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 				return false;
 			}
 		}
+
+		// TypeFilter的实现有：
+		// 		AnnotationTypeFilter -> AbstractTypeHierarchyTraversingFilter
 		for (TypeFilter tf : this.includeFilters) {
 			if (tf.match(metadataReader, getMetadataReaderFactory())) {
 				// 需要判断符不符合条件 @Conditional，不符合条件则返回 false

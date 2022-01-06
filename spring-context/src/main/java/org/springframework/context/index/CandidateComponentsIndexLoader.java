@@ -97,7 +97,7 @@ public final class CandidateComponentsIndexLoader {
 
 		try {
 			// 加载 META-INF/spring.components 下的文件
-			// 一般好像不设定，所以没有，返回 null
+			// 一般好像不设定，所以没有，urls 没有元素
 			Enumeration<URL> urls = classLoader.getResources(COMPONENTS_RESOURCE_LOCATION);
 			if (!urls.hasMoreElements()) {
 				return null;

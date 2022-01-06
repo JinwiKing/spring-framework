@@ -20,6 +20,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.lang.Nullable;
 
 /**
+ * 工厂钩子，允许用户修改新 Bean 的定义，例如用一个代理将 Bean 包起来
+ *
  * Factory hook that allows for custom modification of new bean instances &mdash;
  * for example, checking for marker interfaces or wrapping beans with proxies.
  * <p>工厂钩子，允许用户修改bean的实例。
