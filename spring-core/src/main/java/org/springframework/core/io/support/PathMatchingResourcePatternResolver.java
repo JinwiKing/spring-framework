@@ -286,6 +286,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 		Assert.notNull(locationPattern, "Location pattern must not be null");
 		if (locationPattern.startsWith(CLASSPATH_ALL_URL_PREFIX)) {
 			// a class path resource (multiple resources for same name possible)
+			// getPathMatcher() => AntPathMatcher
 			if (getPathMatcher().isPattern(locationPattern.substring(CLASSPATH_ALL_URL_PREFIX.length()))) {
 				// a class path resource pattern
 				return findPathMatchingResources(locationPattern);
@@ -340,12 +341,14 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	protected Set<Resource> doFindAllClassPathResources(String path) throws IOException {
 		Set<Resource> result = new LinkedHashSet<>(16);
 		ClassLoader cl = getClassLoader();
+		// TODO: ClassLoader.getSystemResources
 		Enumeration<URL> resourceUrls = (cl != null ? cl.getResources(path) : ClassLoader.getSystemResources(path));
 		while (resourceUrls.hasMoreElements()) {
 			URL url = resourceUrls.nextElement();
 			result.add(convertClassLoaderURL(url));
 		}
 		if (!StringUtils.hasLength(path)) {
+			// path 为空字符串则全路径扫描？
 			// The above result is likely to be incomplete, i.e. only containing file system references.
 			// We need to have pointers to each of the jar files on the classpath as well...
 			addAllClassLoaderJarRoots(cl, result);

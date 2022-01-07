@@ -285,8 +285,9 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 			// 返回的 BeanDefinition 类型为 ScannedGenericBeanDefinition
 			// ScannedGenericBeanDefinition 是 AnnotatedBeanDefinition
 			// ScannedGenericBeanDefinition 也实现了 AnnotatedBeanDefinition
-			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
+			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);	// 根扫描
 			for (BeanDefinition candidate : candidates) {
+				// 决定作用范围，i.e. @Scope
 				ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);
 				candidate.setScope(scopeMetadata.getScopeName());
 				String beanName = this.beanNameGenerator.generateBeanName(candidate, this.registry);
@@ -294,8 +295,11 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 					postProcessBeanDefinition((AbstractBeanDefinition) candidate, beanName);
 				}
 				if (candidate instanceof AnnotatedBeanDefinition) {
+					// 处理通用的定义注解，如 @Lazy 等
 					AnnotationConfigUtils.processCommonDefinitionAnnotations((AnnotatedBeanDefinition) candidate);
 				}
+
+				// 检查候选类
 				if (checkCandidate(beanName, candidate)) {
 					BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(candidate, beanName);
 					definitionHolder =
@@ -316,6 +320,8 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 */
 	protected void postProcessBeanDefinition(AbstractBeanDefinition beanDefinition, String beanName) {
 		beanDefinition.applyDefaults(this.beanDefinitionDefaults);
+
+		// autowireCandidatePatterns 默认为 null
 		if (this.autowireCandidatePatterns != null) {
 			beanDefinition.setAutowireCandidate(PatternMatchUtils.simpleMatch(this.autowireCandidatePatterns, beanName));
 		}

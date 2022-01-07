@@ -166,6 +166,7 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 			@Nullable Predicate<? super MergedAnnotation<A>> predicate,
 			@Nullable MergedAnnotationSelector<A> selector) {
 
+		// 黑名单模式
 		if (this.annotationFilter.matches(annotationType)) {
 			return MergedAnnotation.missing();
 		}

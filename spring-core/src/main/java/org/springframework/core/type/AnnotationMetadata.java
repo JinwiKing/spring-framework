@@ -81,6 +81,9 @@ public interface AnnotationMetadata extends ClassMetadata, AnnotatedTypeMetadata
 	}
 
 	/**
+	 * meta-annotation 元注解
+	 * Java5.0定义的元注解：@Target, @Retention, @Documented, @Inherited
+	 *
 	 * Determine whether the underlying class has an annotation that is itself
 	 * annotated with the meta-annotation of the given type.
 	 * @param metaAnnotationName the fully qualified class name of the

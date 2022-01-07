@@ -438,8 +438,8 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 		try {
 			String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
 					resolveBasePackage(basePackage) + '/' + this.resourcePattern;
-			// 此处 Resource 类型应该是 UrlResource
-			Resource[] resources = getResourcePatternResolver().getResources(packageSearchPath);
+			// getResourcePatternResolver() => PathMatchingResourcePatternResolver
+			Resource[] resources = getResourcePatternResolver().getResources(packageSearchPath);	// <= UrlResource
 			boolean traceEnabled = logger.isTraceEnabled();
 			boolean debugEnabled = logger.isDebugEnabled();
 			for (Resource resource : resources) {
@@ -448,8 +448,10 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 				}
 				if (resource.isReadable()) {
 					try {
+						// getMetadataReaderFactory() => new CachingMetadataReaderFactory(resourceLoader);
 						MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
 						// isCandidateComponent 方法将判断类文件是否有 Spring 相关的注解
+						// 模式情况下 isCandidateComponent
 						if (isCandidateComponent(metadataReader)) {
 							ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition(metadataReader);
 							sbd.setSource(resource);
