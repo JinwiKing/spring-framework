@@ -150,6 +150,8 @@ public interface ConfigurableBeanFactory extends HierarchicalBeanFactory, Single
 	/**
 	 * Specify a Spring 3.0 ConversionService to use for converting
 	 * property values, as an alternative to JavaBeans PropertyEditors.
+	 * <br>
+	 * 指定一个Spring3.0转换服务，作为一个可代替 JavaBeans PropertyEditors， 用于转换属性值
 	 * @since 3.0
 	 */
 	void setConversionService(@Nullable ConversionService conversionService);
@@ -241,6 +243,10 @@ public interface ConfigurableBeanFactory extends HierarchicalBeanFactory, Single
 	 * {@link org.springframework.core.Ordered} interface will be ignored. Note
 	 * that autodetected post-processors (e.g. as beans in an ApplicationContext)
 	 * will always be applied after programmatically registered ones.
+	 *
+	 * 添加一个新的 BeanPostProcessor，该 BeanPostProcessor 将在工厂内的 Bean 创建后被调用。
+	 * 注意：忽略像 Ordered 的排序语义
+	 *
 	 * @param beanPostProcessor the post-processor to register
 	 */
 	void addBeanPostProcessor(BeanPostProcessor beanPostProcessor);

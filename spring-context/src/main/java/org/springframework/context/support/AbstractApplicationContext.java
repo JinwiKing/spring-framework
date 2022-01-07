@@ -560,6 +560,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 			// Tell the subclass to refresh the internal bean factory.
 			// AnnotationConfigApplicationContext 的情况
+
 			//			无参构造方式下，返回的是 DefaultListableApplicationContext 类型的实例
 			// obtainFreshBeanFactory 方法里默认会调用 refreshBeanFactory 方法，而 ClassPathXmlApplicationContext 和
 			// AnnotationConfigApplication 对该方法都是先销毁了目前 BeanFactory 里面实例，会导致获取 Bean 的过程马上失效，
@@ -575,14 +576,20 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// Allows post-processing of the bean factory in context subclasses.
 				// 模板方法，默认为空方法
 				// AnnotationConfigApplicationContext 继承链中没有重写该方法
+				// ！！！这一步可以提前往 BeanFactory 丢入 BeanPostProcessor 或则提前丢入自己初始化好的 Bean，而 AbstractApplicationContext 类型
+				// 只能让你丢入 BeanFactoryPostProcessor。
 				postProcessBeanFactory(beanFactory);
 
 				StartupStep beanPostProcess = this.applicationStartup.start("spring.context.beans.post-process");
 				// Invoke factory processors registered as beans in the context.
 				// 调用接口 BeanFactoryPostProcessor 中的 postProcessBeanFactory 方法，表示 bean 工厂准备完成
-				invokeBeanFactoryPostProcessors(beanFactory);
+				// 调用 BeanFactory 的后处理处理器，目的有：驱动注解配置应用上下文对给定对配置进行扫描等。
+				// ！！！注意：如果通过 AnnotationConfigApplicationContext 的指定配置类的构造方法进入，则指定
+				// 的配置类不会通知给 BeanPostProcessor
+				invokeBeanFactoryPostProcessors(beanFactory);	// ！！！里面有装载 BeanDefinition 的核心代码
 
 				// Register bean processors that intercept bean creation.
+				// 这一步很可能是将上一步扫描到的 BeanPostProcessor 丢入到 BeanFactory 的 BeanPostProcessor 列表中
 				// TODO: analysis -2
 				registerBeanPostProcessors(beanFactory);
 				beanPostProcess.end();
@@ -748,6 +755,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.registerResolvableDependency(ApplicationContext.class, this);
 
 		// Register early post-processor for detecting inner beans as ApplicationListeners.
+		// 作用：将实现了 ApplicationListener 的 Bean 放入 ApplicationContext 中的事件监听列表中；
+		// 		在 Bean 被销毁时，如果该 Bean 实现了 ApplicationListener， 则从 ApplicationContext 中的事件监听列表中移除
 		beanFactory.addBeanPostProcessor(new ApplicationListenerDetector(this));
 
 		// Detect a LoadTimeWeaver and prepare for weaving, if found.
@@ -965,6 +974,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) {
 		// Initialize conversion service for this context.
+		// ConversionService ?
 		if (beanFactory.containsBean(CONVERSION_SERVICE_BEAN_NAME) &&
 				beanFactory.isTypeMatch(CONVERSION_SERVICE_BEAN_NAME, ConversionService.class)) {
 			beanFactory.setConversionService(
@@ -991,7 +1001,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.freezeConfiguration();
 
 		// Instantiate all remaining (non-lazy-init) singletons.
-		// 预实例化单例的 bean
+		// 预实例化单例的 bean (只实例化没有@Lazy注解的)
 		beanFactory.preInstantiateSingletons();
 	}
 

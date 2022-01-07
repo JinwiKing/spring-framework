@@ -26,6 +26,11 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
+ * Generic: adj. （药物或商品）无专利的，未注册的
+ * <br>
+ * ScannedGenericBeanDefinition 扫描了未注册的Bean定义
+ * <br>
+ *
  * Extension of the {@link org.springframework.beans.factory.support.GenericBeanDefinition}
  * class, based on an ASM ClassReader, with support for annotation metadata exposed
  * through the {@link AnnotatedBeanDefinition} interface.

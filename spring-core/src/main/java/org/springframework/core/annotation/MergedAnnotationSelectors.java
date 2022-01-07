@@ -74,6 +74,7 @@ public abstract class MergedAnnotationSelectors {
 				MergedAnnotation<Annotation> existing, MergedAnnotation<Annotation> candidate) {
 
 			if (candidate.getDistance() < existing.getDistance()) {
+				// 返回越接近"根"的 MergedAnnotation
 				return candidate;
 			}
 			return existing;

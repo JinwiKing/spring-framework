@@ -45,6 +45,7 @@ public class ExtendedBeanInfoFactory implements BeanInfoFactory, Ordered {
 	@Override
 	@Nullable
 	public BeanInfo getBeanInfo(Class<?> beanClass) throws IntrospectionException {
+		// 用的是 java.beans 相关 api
 		return (supports(beanClass) ? new ExtendedBeanInfo(Introspector.getBeanInfo(beanClass)) : null);
 	}
 

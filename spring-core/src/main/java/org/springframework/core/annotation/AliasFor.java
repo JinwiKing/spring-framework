@@ -197,6 +197,9 @@ public @interface AliasFor {
 	String attribute() default "";
 
 	/**
+	 * 别名定义所在的注解类型。默认为 Annotation，意味着别名属性定义在同一个注解上，也就是 this 属性？
+	 * <br>
+	 *
 	 * The type of annotation in which the aliased {@link #attribute} is declared.
 	 * <p>Defaults to {@link Annotation}, implying that the aliased attribute is
 	 * declared in the same annotation as <em>this</em> attribute.

@@ -82,7 +82,7 @@ public class AnnotationAttributes extends LinkedHashMap<String, Object> {
 	 * @see #fromMap(Map)
 	 */
 	public AnnotationAttributes(Map<String, Object> map) {
-		super(map);
+		super(map);	// => LinkedHashMap
 		this.annotationType = null;
 		this.displayName = UNKNOWN;
 	}

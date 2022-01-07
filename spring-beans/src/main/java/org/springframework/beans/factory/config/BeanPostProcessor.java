@@ -20,6 +20,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.lang.Nullable;
 
 /**
+ * 工厂钩子，允许用户修改新 Bean 的定义，例如用一个代理将 Bean 包起来
+ *
  * Factory hook that allows for custom modification of new bean instances &mdash;
  * for example, checking for marker interfaces or wrapping beans with proxies.
  * <p>工厂钩子，允许用户修改bean的实例。
@@ -66,7 +68,8 @@ public interface BeanPostProcessor {
 	 * The returned bean instance may be a wrapper around the original.
 	 * <p>The default implementation returns the given {@code bean} as-is.
 	 *
-	 * <p>调用这一步的情况下的 bean 已经是实例化完成的了，但是没有敬礼任何的初始化
+	 * <p>调用这一步的情况下的 bean 已经是实例化完成的了，但是没有进行任何的 Spring 过程初始化。Spring 初始化过程
+	 * 包括 afterPropertiesSet 方法调用
 	 *
 	 * @param bean the new bean instance
 	 * @param beanName the name of the bean

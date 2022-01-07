@@ -36,6 +36,9 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
+ * 为一个注解提供映射信息快速访问封装
+ * <br>
+ *
  * Provides mapping information for a single annotation (or meta-annotation) in
  * the context of a root annotation type.
  *
@@ -97,7 +100,7 @@ final class AnnotationTypeMapping {
 		this.conventionMappings = filledIntArray(this.attributes.size());
 		this.annotationValueMappings = filledIntArray(this.attributes.size());
 		this.annotationValueSource = new AnnotationTypeMapping[this.attributes.size()];
-		this.aliasedBy = resolveAliasedForTargets();
+		this.aliasedBy = resolveAliasedForTargets();	// 读取注解中的方法上面的 @AliasFor 注解
 		processAliases();
 		addConventionMappings();
 		addConventionAnnotationValues();
@@ -134,6 +137,7 @@ final class AnnotationTypeMapping {
 
 	private Method resolveAliasTarget(Method attribute, AliasFor aliasFor, boolean checkAliasPair) {
 		if (StringUtils.hasText(aliasFor.value()) && StringUtils.hasText(aliasFor.attribute())) {
+			// @AliasFor 注解不允许注解内的 value 和 attribute 方法同时有值
 			throw new AnnotationConfigurationException(String.format(
 					"In @AliasFor declared on %s, attribute 'attribute' and its alias 'value' " +
 					"are present with values of '%s' and '%s', but only one is permitted.",
@@ -149,6 +153,7 @@ final class AnnotationTypeMapping {
 			targetAttributeName = aliasFor.value();
 		}
 		if (!StringUtils.hasLength(targetAttributeName)) {
+			// 如果 @AliasFor 注解中的 value 和 attribute 方法返回的字符串长度为0，则使用传入的注解方法的方法名字
 			targetAttributeName = attribute.getName();
 		}
 		Method target = AttributeMethods.forAnnotationType(targetAnnotation).get(targetAttributeName);
@@ -671,6 +676,9 @@ final class AnnotationTypeMapping {
 
 
 		/**
+		 * 一个单一的镜像集合属性
+		 * <br>
+		 *
 		 * A single set of mirror attributes.
 		 */
 		class MirrorSet {

@@ -285,6 +285,8 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	public Resource[] getResources(String locationPattern) throws IOException {
 		Assert.notNull(locationPattern, "Location pattern must not be null");
 		if (locationPattern.startsWith(CLASSPATH_ALL_URL_PREFIX)) {
+			// classpath:* 扫描
+
 			// a class path resource (multiple resources for same name possible)
 			// getPathMatcher() => AntPathMatcher
 			if (getPathMatcher().isPattern(locationPattern.substring(CLASSPATH_ALL_URL_PREFIX.length()))) {

@@ -133,6 +133,13 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
+	/**
+	 * 构造方法加入的注解有：<br>
+	 * 	Autowired<br>
+	 * 	Value<br>
+	 * 	javax.inject.Inject (前提：倒入了 JSR-330 相关的包)<br>
+	 * 默认情况下，初始化容量为4，实际丢入为3，和扩容系数有关？
+	 */
 	private final Set<Class<? extends Annotation>> autowiredAnnotationTypes = new LinkedHashSet<>(4);
 
 	private String requiredParameterName = "required";
@@ -165,8 +172,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 			this.autowiredAnnotationTypes.add((Class<? extends Annotation>)
 					ClassUtils.forName("javax.inject.Inject", AutowiredAnnotationBeanPostProcessor.class.getClassLoader()));
 			logger.trace("JSR-330 'javax.inject.Inject' annotation found and supported for autowiring");
-		}
-		catch (ClassNotFoundException ex) {
+		}catch (ClassNotFoundException ex) {
 			// JSR-330 API not available - simply skip.
 		}
 	}
@@ -243,7 +249,12 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+		// TODO: 注解自动注入
+
+		// 这一步获取 bean 的类型需要进行 DI 操作的属性和方法
 		InjectionMetadata metadata = findAutowiringMetadata(beanName, beanType, null);
+
+		// 检查配置成员，如果 InjectionMetadata 里面的元素不在 RootBeanDefinition 中，则将元素丢入 RootBeanDefinition 中
 		metadata.checkConfigMembers(beanDefinition);
 	}
 
@@ -448,6 +459,8 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 			synchronized (this.injectionMetadataCache) {
 				metadata = this.injectionMetadataCache.get(cacheKey);
 				if (InjectionMetadata.needsRefresh(metadata, clazz)) {
+					// DCL
+
 					if (metadata != null) {
 						metadata.clear(pvs);
 					}
@@ -461,7 +474,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 
 	private InjectionMetadata buildAutowiringMetadata(final Class<?> clazz) {
 		if (!AnnotationUtils.isCandidateClass(clazz, this.autowiredAnnotationTypes)) {
-			return InjectionMetadata.EMPTY;
+			return InjectionMetadata.EMPTY;	// 特例，减少对 null 的判断
 		}
 
 		List<InjectionMetadata.InjectedElement> elements = new ArrayList<>();
@@ -470,10 +483,23 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 		do {
 			final List<InjectionMetadata.InjectedElement> currElements = new ArrayList<>();
 
+			// 检查目标类中需要自动注入的属性
 			ReflectionUtils.doWithLocalFields(targetClass, field -> {
-				MergedAnnotation<?> ann = findAutowiredAnnotation(field);
+				MergedAnnotation<?> ann = findAutowiredAnnotation(field);	// <= TypeMappedAnnotation
 				if (ann != null) {
+					// see also:
+					// 	Autowired
+					// 	Value
+					//	Inject
 					if (Modifier.isStatic(field.getModifiers())) {
+						// TODO：静态注入检查
+						// 静态注入检查
+						// 如果需要静态注入，可以考虑替换代码？
+						//
+						// Spring不做静态属性注入的可能原因：
+						//		1、流程上：无法处理依赖关系。静态属性在类会在类第一次被使用的时候进行初始化，Spring无法干扰类初始化的先后顺序。
+						//		2、流程上：
+						//		3、代码设计上：面向对象编程。大部分业务流程在对象内部完成而不是在类上完成
 						if (logger.isInfoEnabled()) {
 							logger.info("Autowired annotation is not supported on static fields: " + field);
 						}
@@ -484,14 +510,18 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 				}
 			});
 
+			// 检查目标类中需要自动注入的方法
 			ReflectionUtils.doWithLocalMethods(targetClass, method -> {
-				Method bridgedMethod = BridgeMethodResolver.findBridgedMethod(method);
+				Method bridgedMethod = BridgeMethodResolver.findBridgedMethod(method);	// 桥接方法？
 				if (!BridgeMethodResolver.isVisibilityBridgeMethodPair(method, bridgedMethod)) {
 					return;
 				}
+
+				// 同获取属性上的自动注入注解，这里获取方法上的自动注入注解，@Autowired、@Value、@Inject
 				MergedAnnotation<?> ann = findAutowiredAnnotation(bridgedMethod);
 				if (ann != null && method.equals(ClassUtils.getMostSpecificMethod(method, clazz))) {
 					if (Modifier.isStatic(method.getModifiers())) {
+						// 同上面属性的操作，一样不支持静态方法注入
 						if (logger.isInfoEnabled()) {
 							logger.info("Autowired annotation is not supported on static methods: " + method);
 						}
@@ -502,26 +532,31 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 							logger.info("Autowired annotation should only be used on methods with parameters: " +
 									method);
 						}
+						// TODO: 问题
+						// 这里不跳过对没有入参的方法的自动注入？A bug？
 					}
 					boolean required = determineRequiredStatus(ann);
+					// PropertyDescriptor 为 java.beans 下的东西
 					PropertyDescriptor pd = BeanUtils.findPropertyForMethod(bridgedMethod, clazz);
 					currElements.add(new AutowiredMethodElement(method, required, pd));
 				}
 			});
 
 			elements.addAll(0, currElements);
-			targetClass = targetClass.getSuperclass();
-		}
-		while (targetClass != null && targetClass != Object.class);
+			targetClass = targetClass.getSuperclass();	// 检查父类需要注入字段和方法
+		}while (targetClass != null && targetClass != Object.class);
 
 		return InjectionMetadata.forElements(elements, clazz);
 	}
 
 	@Nullable
 	private MergedAnnotation<?> findAutowiredAnnotation(AccessibleObject ao) {
-		MergedAnnotations annotations = MergedAnnotations.from(ao);
+		MergedAnnotations annotations = MergedAnnotations.from(ao);	// <= TypeMappedAnnotations
 		for (Class<? extends Annotation> type : this.autowiredAnnotationTypes) {
 			MergedAnnotation<?> annotation = annotations.get(type);
+			// TODO：问题
+			// 如果同时注解了 @Autowire 和 @Value，只返回其中一个？
+			// 意思是 @Autowire 和 @Value 将要做的操作都是一样的？
 			if (annotation.isPresent()) {
 				return annotation;
 			}
@@ -541,7 +576,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 	protected boolean determineRequiredStatus(MergedAnnotation<?> ann) {
 		// The following (AnnotationAttributes) cast is required on JDK 9+.
 		return determineRequiredStatus((AnnotationAttributes)
-				ann.asMap(mergedAnnotation -> new AnnotationAttributes(mergedAnnotation.getType())));
+				ann.asMap(mergedAnnotation -> new AnnotationAttributes(mergedAnnotation.getType())));	// AnnotationAttributes -> LinkedHashMap
 	}
 
 	/**
@@ -555,6 +590,8 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 	 */
 	@Deprecated
 	protected boolean determineRequiredStatus(AnnotationAttributes ann) {
+
+		// 检查注解是否包含 required 方法，并且方法返回 true
 		return (!ann.containsKey(this.requiredParameterName) ||
 				this.requiredParameterValue == ann.getBoolean(this.requiredParameterName));
 	}

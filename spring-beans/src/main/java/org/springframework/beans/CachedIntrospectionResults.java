@@ -101,7 +101,11 @@ public final class CachedIntrospectionResults {
 	private static final boolean shouldIntrospectorIgnoreBeaninfoClasses =
 			SpringProperties.getFlag(IGNORE_BEANINFO_PROPERTY_NAME);
 
-	/** Stores the BeanInfoFactory instances. */
+	/**
+	 * Stores the BeanInfoFactory instances.
+	 * <br>
+	 * beans 包下 ExtendedBeanInfoFactory
+	 * */
 	private static final List<BeanInfoFactory> beanInfoFactories = SpringFactoriesLoader.loadFactories(
 			BeanInfoFactory.class, CachedIntrospectionResults.class.getClassLoader());
 
@@ -319,8 +323,7 @@ public final class CachedIntrospectionResults {
 			introspectPlainAccessors(beanClass, readMethodNames);
 
 			this.typeDescriptorCache = new ConcurrentReferenceHashMap<>();
-		}
-		catch (IntrospectionException ex) {
+		}catch (IntrospectionException ex) {
 			throw new FatalBeanException("Failed to obtain BeanInfo for class [" + beanClass.getName() + "]", ex);
 		}
 	}

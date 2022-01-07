@@ -58,6 +58,8 @@ public class AnnotatedGenericBeanDefinition extends GenericBeanDefinition implem
 	 */
 	public AnnotatedGenericBeanDefinition(Class<?> beanClass) {
 		setBeanClass(beanClass);
+
+		// 这一步应该是读取 beanClass 到字节码，将一些注解提取出来封装在一个类中，方便下次读取
 		this.metadata = AnnotationMetadata.introspect(beanClass);	// 默认metadata是 StandardAnnotationMetadata 类型
 	}
 

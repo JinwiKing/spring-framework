@@ -171,6 +171,7 @@ public class AnnotationBeanNameGenerator implements BeanNameGenerator {
 		String shortClassName = ClassUtils.getShortName(beanClassName);
 
 		// java beans 包下的工具
+		// 将首字母小写
 		return Introspector.decapitalize(shortClassName);
 	}
 

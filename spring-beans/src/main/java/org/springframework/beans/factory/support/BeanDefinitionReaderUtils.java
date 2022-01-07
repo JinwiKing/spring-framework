@@ -160,6 +160,9 @@ public abstract class BeanDefinitionReaderUtils {
 			throws BeanDefinitionStoreException {
 		// 注意：此时 bean 没有实例化
 
+		// 主要流程：
+		// 1、将 Bean 到名字与 BeanDefinition 绑定
+
 		// Register bean definition under primary name.
 		String beanName = definitionHolder.getBeanName();
 		registry.registerBeanDefinition(beanName, definitionHolder.getBeanDefinition());

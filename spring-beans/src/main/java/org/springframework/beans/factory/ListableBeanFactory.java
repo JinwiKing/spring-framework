@@ -59,6 +59,10 @@ import org.springframework.lang.Nullable;
  */
 public interface ListableBeanFactory extends BeanFactory {
 
+	// 公共参数说明：
+	// allowEagerInit
+	// 是否允许急切的初始化（就是 Bean 被实例化后（调用完构造方法））
+
 	/**
 	 * Check if this bean factory contains a bean definition with the given name.
 	 * <p>Does not consider any hierarchy this factory may participate in,

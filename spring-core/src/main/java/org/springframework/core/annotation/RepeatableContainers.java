@@ -157,20 +157,32 @@ public abstract class RepeatableContainers {
 
 		@Nullable
 		private static Method getRepeatedAnnotationsMethod(Class<? extends Annotation> annotationType) {
+			// 获取带有
 			Object result = cache.computeIfAbsent(annotationType,
 					StandardRepeatableContainers::computeRepeatedAnnotationsMethod);
 			return (result != NONE ? (Method) result : null);
 		}
 
 		private static Object computeRepeatedAnnotationsMethod(Class<? extends Annotation> annotationType) {
+			// 一个注解返回中有这个方法？：
+			//
+			// @Repeatable
+			// @interface Anno {}
+			//
+			// @interface OtherAnno {
+			// 		Anno[] value()
+			// }
+
 			AttributeMethods methods = AttributeMethods.forAnnotationType(annotationType);
 			if (methods.hasOnlyValueAttribute()) {
 				Method method = methods.get(0);
 				Class<?> returnType = method.getReturnType();
 				if (returnType.isArray()) {
 					Class<?> componentType = returnType.getComponentType();
+					// 如果是多维数组，componentType 可能依旧是数组，但是注解下面不允许多维数组
 					if (Annotation.class.isAssignableFrom(componentType) &&
 							componentType.isAnnotationPresent(Repeatable.class)) {
+						// 检查方法返回的类型的元素类型是不是一个注解，并且包含了 @Repeatable 注解
 						return method;
 					}
 				}

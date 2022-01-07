@@ -86,6 +86,9 @@ final class TypeMappedAnnotation<A extends Annotation> extends AbstractMergedAnn
 	}
 
 
+	/**
+	 * 应该是核心属性
+	 */
 	private final AnnotationTypeMapping mapping;
 
 	@Nullable
@@ -122,7 +125,10 @@ final class TypeMappedAnnotation<A extends Annotation> extends AbstractMergedAnn
 			@Nullable Object source, @Nullable Object rootAttributes, ValueExtractor valueExtractor,
 			int aggregateIndex, @Nullable int[] resolvedRootMirrors) {
 
-		this.mapping = mapping;
+		// valueExtractor 的实现有:
+		// 		ReflectionUtils::invokeMethod
+
+		this.mapping = mapping;		// 应该是核心属性
 		this.classLoader = classLoader;
 		this.source = source;
 		this.rootAttributes = rootAttributes;
@@ -291,6 +297,7 @@ final class TypeMappedAnnotation<A extends Annotation> extends AbstractMergedAnn
 	}
 
 	private Class<?> getTypeForMapOptions(Method attribute, Adapt[] adaptations) {
+		// 如果方法返回类型是 String 类型，则返回 String 类，其他返回 Object 类
 		Class<?> attributeType = attribute.getReturnType();
 		Class<?> componentType = (attributeType.isArray() ? attributeType.getComponentType() : attributeType);
 		if (Adapt.CLASS_TO_STRING.isIn(adaptations) && componentType == Class.class) {
@@ -628,11 +635,13 @@ final class TypeMappedAnnotation<A extends Annotation> extends AbstractMergedAnn
 			AnnotationTypeMapping mapping, @Nullable Object source, @Nullable Object rootAttribute,
 			ValueExtractor valueExtractor, int aggregateIndex, IntrospectionFailureLogger logger) {
 
+		// valueExtractor 的实现有:
+		// 		ReflectionUtils::invokeMethod
+
 		try {
 			return new TypeMappedAnnotation<>(mapping, null, source, rootAttribute,
 					valueExtractor, aggregateIndex);
-		}
-		catch (Exception ex) {
+		}catch (Exception ex) {
 			AnnotationUtils.rethrowAnnotationConfigurationException(ex);
 			if (logger.isEnabled()) {
 				String type = mapping.getAnnotationType().getName();

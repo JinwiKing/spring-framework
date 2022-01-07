@@ -216,7 +216,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	 * constructor argument values and property values.
 	 */
 	protected AbstractBeanDefinition(@Nullable ConstructorArgumentValues cargs, @Nullable MutablePropertyValues pvs) {
-		super();
+		super();	// super no arg constructor
 		this.constructorArgumentValues = cargs;
 		this.propertyValues = pvs;
 	}

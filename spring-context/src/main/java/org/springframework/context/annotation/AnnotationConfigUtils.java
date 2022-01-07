@@ -130,6 +130,9 @@ public abstract class AnnotationConfigUtils {
 
 
 	/**
+	 * 注册所有注解有关的后置处理到给定到 Bean 注册中心
+	 * <br>
+	 *
 	 * Register all relevant annotation post processors in the given registry.
 	 * @param registry the registry to operate on
 	 */
@@ -143,11 +146,12 @@ public abstract class AnnotationConfigUtils {
 	 * @param source the configuration source element (already extracted)
 	 * that this registration was triggered from. May be {@code null}.
 	 * @return a Set of BeanDefinitionHolders, containing all bean definitions
-	 * that have actually been registered by this call
+	 * that have actually been registered by this call（返回成功注册到 BeanDefinitionRegistry 的 bean BeanDefinitionHolders 封装）
 	 */
 	public static Set<BeanDefinitionHolder> registerAnnotationConfigProcessors(
 			BeanDefinitionRegistry registry, @Nullable Object source) {
 
+		// 开包
 		// 这里获取在包装内的 DefaultListableBeanFactory 实例，如 GenericApplicationContext
 		// 内部有一个内部的 DefaultListableBeanFactory 实例。
 		DefaultListableBeanFactory beanFactory = unwrapDefaultListableBeanFactory(registry);
@@ -171,7 +175,7 @@ public abstract class AnnotationConfigUtils {
 		// ConfigurationClassPostProcessor org.springframework.context.annotation.internalConfigurationAnnotationProcessor -> ConfigurationClassPostProcessor
 		// AutowiredAnnotationBeanPostProcessor org.springframework.context.annotation.internalAutowiredAnnotationProcessor -> AutowiredAnnotationBeanPostProcessor
 		// CommonAnnotationBeanPostProcessor org.springframework.context.annotation.internalCommonAnnotationProcessor -> CommonAnnotationBeanPostProcessor
-		// AnnotationConfigUtils org.springframework.context.annotation.internalPersistenceAnnotationProcessor -> PersistenceAnnotationBeanPostProcessor
+		// PersistenceAnnotationBeanPostProcessor org.springframework.context.annotation.internalPersistenceAnnotationProcessor -> PersistenceAnnotationBeanPostProcessor
 		// EventListenerMethodProcessor org.springframework.context.event.internalEventListenerProcessor -> EventListenerMethodProcessor
 		// DefaultEventListenerFactory org.springframework.context.event.internalEventListenerFactory -> DefaultEventListenerFactory
 
@@ -196,6 +200,7 @@ public abstract class AnnotationConfigUtils {
 		}
 
 		// Check for JPA support, and if present add the PersistenceAnnotationBeanPostProcessor.
+		// JPA, Java Persistence API, Java持久层API
 		if (jpaPresent && !registry.containsBeanDefinition(PERSISTENCE_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition();
 			try {
@@ -228,6 +233,8 @@ public abstract class AnnotationConfigUtils {
 			BeanDefinitionRegistry registry, RootBeanDefinition definition, String beanName) {
 
 		definition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+
+		// GenericApplicationContext 实现是往 BeanFactory 中注册
 		registry.registerBeanDefinition(beanName, definition);
 		return new BeanDefinitionHolder(definition, beanName);
 	}

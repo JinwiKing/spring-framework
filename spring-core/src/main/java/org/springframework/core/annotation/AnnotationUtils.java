@@ -153,6 +153,9 @@ public abstract class AnnotationUtils {
 	}
 
 	/**
+	 * 检查是否给定的类是一个携带指定注解的候选类。携带注解可以是类型、方法或字段。
+	 * <br>
+	 *
 	 * Determine whether the given class is a candidate for carrying the specified annotation
 	 * (at type, method or field level).
 	 * @param clazz the class to introspect
@@ -165,9 +168,12 @@ public abstract class AnnotationUtils {
 	 */
 	public static boolean isCandidateClass(Class<?> clazz, String annotationName) {
 		if (annotationName.startsWith("java.")) {
+			// 如果注解位于 java. 包内的，则直接是候选类？ => java.lang.Class?
 			return true;
 		}
 		if (AnnotationsScanner.hasPlainJavaAnnotationsOnly(clazz)) {
+			// 如果类型是位于 java. 包内的，则直接不是候选类。很简单，java. 包下的类是 java 自带的类型，不会有 spring
+			// 所需要的注解
 			return false;
 		}
 		return true;
@@ -1070,6 +1076,9 @@ public abstract class AnnotationUtils {
 	}
 
 	/**
+	 * 	如果是 AnnotationConfigurationException，则重新抛出
+	 * 	<br>
+	 *
 	 * If the supplied throwable is an {@link AnnotationConfigurationException},
 	 * it will be cast to an {@code AnnotationConfigurationException} and thrown,
 	 * allowing it to propagate to the caller.

@@ -37,6 +37,9 @@ public interface AttributeAccessor {
 	 * <p>In general, users should take care to prevent overlaps with other
 	 * metadata attributes by using fully-qualified names, perhaps using
 	 * class or package names as prefix.
+	 *
+	 * <p>根据属性名字设置属性值。（估计是用于 DI 操作？）</p>
+	 *
 	 * @param name the unique attribute key
 	 * @param value the attribute value to be attached
 	 */
@@ -45,6 +48,9 @@ public interface AttributeAccessor {
 	/**
 	 * Get the value of the attribute identified by {@code name}.
 	 * <p>Return {@code null} if the attribute doesn't exist.
+	 *
+	 * <p>根据属性名字获取属性值</p>
+	 *
 	 * @param name the unique attribute key
 	 * @return the current value of the attribute, if any
 	 */

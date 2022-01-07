@@ -44,10 +44,17 @@ import org.springframework.util.ClassUtils;
  */
 public class AnnotationTypeFilter extends AbstractTypeHierarchyTraversingFilter {
 
+	/**
+	 * 目标筛选的类型
+	 */
 	private final Class<? extends Annotation> annotationType;
 
 	/**
-	 * 考虑源注解？
+	 * new AnnotationTypeFilter(Component.class) 情况下为 true
+	 * <br>
+	 * 考虑元注解？
+	 * <br>
+	 * 元注解有：@Target，@Retention，@Documented，@Inherited
 	 */
 	private final boolean considerMetaAnnotations;
 
@@ -77,7 +84,7 @@ public class AnnotationTypeFilter extends AbstractTypeHierarchyTraversingFilter 
 	/**
 	 * Create a new {@code AnnotationTypeFilter} for the given annotation type.
 	 * @param annotationType the annotation type to match
-	 * @param considerMetaAnnotations whether to also match on meta-annotations
+	 * @param considerMetaAnnotations whether to also match on meta-annotations（是否也去匹配原注解）
 	 * @param considerInterfaces whether to also match interfaces
 	 */
 	public AnnotationTypeFilter(
@@ -132,8 +139,7 @@ public class AnnotationTypeFilter extends AbstractTypeHierarchyTraversingFilter 
 				Class<?> clazz = ClassUtils.forName(typeName, getClass().getClassLoader());
 				return ((this.considerMetaAnnotations ? AnnotationUtils.getAnnotation(clazz, this.annotationType) :
 						clazz.getAnnotation(this.annotationType)) != null);
-			}
-			catch (Throwable ex) {
+			}catch (Throwable ex) {
 				// Class not regularly loadable - can't determine a match that way.
 			}
 		}
